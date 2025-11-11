@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useMemo } from "react";
 
 interface CourseCardProps {
+  id?: number | string;
   image: string;
   title: string;
   progress?: number;
@@ -21,7 +22,24 @@ interface CourseCardProps {
   className?: string;
 }
 
+const hashString = (value: string) => {
+  let hash = 0;
+  for (let i = 0; i < value.length; i++) {
+    hash = (hash << 5) - hash + value.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+};
+
+const getDeterministicValue = (seed: string, min: number, max: number) => {
+  const range = max - min;
+  if (range <= 0) return min;
+  const hash = hashString(seed);
+  return min + (hash % (range + 1));
+};
+
 export function CourseCard({
+  id,
   image,
   title,
   progress = 12,
@@ -38,11 +56,24 @@ export function CourseCard({
   delay = 0,
   className = "",
 }: CourseCardProps) {
-  // Generate random numbers if not provided (stable per card instance)
-  const randomUsers = useMemo(() => users ?? Math.floor(Math.random() * 5000) + 1000, [users]);
-  const randomViews = useMemo(() => views ?? Math.floor(Math.random() * 10000) + 5000, [views]);
-  const randomCertificates = useMemo(() => certificates ?? Math.floor(Math.random() * 500) + 100, [certificates]);
-  const randomPortfolio = useMemo(() => portfolio ?? Math.floor(Math.random() * 200) + 50, [portfolio]);
+  const seedKey = useMemo(() => String(id ?? title), [id, title]);
+
+  const randomUsers = useMemo(
+    () => users ?? getDeterministicValue(`${seedKey}-users`, 1200, 6200),
+    [users, seedKey]
+  );
+  const randomViews = useMemo(
+    () => views ?? getDeterministicValue(`${seedKey}-views`, 7500, 17500),
+    [views, seedKey]
+  );
+  const randomCertificates = useMemo(
+    () => certificates ?? getDeterministicValue(`${seedKey}-certificates`, 150, 650),
+    [certificates, seedKey]
+  );
+  const randomPortfolio = useMemo(
+    () => portfolio ?? getDeterministicValue(`${seedKey}-portfolio`, 70, 270),
+    [portfolio, seedKey]
+  );
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {

@@ -9,7 +9,13 @@ import { TallSalesCard } from "@/components/cards/TallSalesCard";
 import { SimpleStatCard } from "@/components/cards/SimpleStatCard";
 import { CourseCardsCarousel } from "@/components/cards/CourseCardsCarousel";
 import { RegionsList } from "@/components/cards/RegionsList";
+import { RegionStatsTable } from "@/components/cards/RegionStatsTable";
 import { RegionPanel } from "@/components/panels/RegionPanel";
+import ChartCard from "@/components/ChartCard";
+import { genderData } from "@/data/gender";
+import { ageData } from "@/data/age";
+import { sourceData } from "@/data/source";
+import { educationData } from "@/data/education";
 import { useIncomeData } from "@/hooks/useIncomeData";
 import { useVideoViewsData } from "@/hooks/useVideoViewsData";
 
@@ -38,9 +44,11 @@ export default function DashboardPage() {
   const videoViewsData = useVideoViewsData();
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [gradientColors, setGradientColors] = useState({ from: "#6A5AED", to: "#C053E4" });
 
-  const handleRegionClick = (regionName: string) => {
+  const handleRegionClick = (regionName: string, gradientFrom: string, gradientTo: string) => {
     setSelectedRegion(regionName);
+    setGradientColors({ from: gradientFrom, to: gradientTo });
     setIsPanelOpen(true);
   };
 
@@ -64,15 +72,33 @@ export default function DashboardPage() {
           {/* Row 3: Sales Report with Gauge */}
           <TallSalesCard data={videoViewsData} delay={7} />
 
-          {/* Row 4: Regions List */}
-          <div className="card card-full" data-delay="14">
+          {/* Row 4: Regions Overview */}
+          <div className="card" data-delay="14" style={{ gridColumn: "span 6" }}>
             <RegionsList onRegionClick={handleRegionClick} />
+          </div>
+          <div className="card" data-delay="15" style={{ gridColumn: "span 6" }}>
+            <RegionStatsTable />
           </div>
 
           {/* Row 5: Course Carousel - Full Width */}
           <div className="card card-full" data-delay="16">
             <CourseCardsCarousel courses={courses} />
           </div>
+
+          {/* Row 6: Statistics Charts */}
+          <div className="card" data-delay="18" style={{ gridColumn: "span 3" }}>
+            <ChartCard title="Jins bo'yicha statistika" data={genderData} />
+          </div>
+          <div className="card" data-delay="19" style={{ gridColumn: "span 3" }}>
+            <ChartCard title="Yosh bo'yicha statistika" data={ageData} />
+          </div>
+          <div className="card" data-delay="20" style={{ gridColumn: "span 3" }}>
+            <ChartCard title="Manba bo'yicha statistika" data={sourceData} />
+          </div>
+          <div className="card" data-delay="21" style={{ gridColumn: "span 3" }}>
+            <ChartCard title="Ta'lim bo'yicha statistika" data={educationData} />
+          </div>
+
         </DashboardGridLayout>
       </div>
 
@@ -81,6 +107,8 @@ export default function DashboardPage() {
         region={selectedRegion}
         isOpen={isPanelOpen}
         onClose={handleClosePanel}
+        gradientFrom={gradientColors.from}
+        gradientTo={gradientColors.to}
       />
     </>
   );

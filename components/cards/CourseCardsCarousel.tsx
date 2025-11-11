@@ -229,6 +229,7 @@ export function CourseCardsCarousel({ courses }: CourseCardsCarouselProps) {
               className="flex-shrink-0"
             >
               <CourseCard
+                id={course.id}
                 image={course.image}
                 title={course.title}
                 delay={index}
