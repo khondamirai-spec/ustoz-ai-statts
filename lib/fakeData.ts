@@ -1,68 +1,76 @@
 import type { User } from "./types";
 
+// Static fake users data for all regions
 export const users: User[] = [
-  { name: "Ali Tursunov", age: 27, city: "Tashkent", joinedAt: "2024-09-12" },
-  { name: "Laylo Karimova", age: 24, city: "Tashkent", joinedAt: "2024-08-04" },
-  { name: "Murod Yuldashev", age: 31, city: "Tashkent", joinedAt: "2024-05-23" },
-  { name: "Nilufar Rakhimova", age: 29, city: "Tashkent", joinedAt: "2024-10-01" },
-  { name: "Bekzod Salimov", age: 21, city: "Tashkent", joinedAt: "2024-03-17" },
-  { name: "Dilnoza Sattorova", age: 33, city: "Tashkent", joinedAt: "2024-01-08" },
-
-  { name: "Shakhnoza Olimova", age: 26, city: "Ferghana", joinedAt: "2024-07-19" },
-  { name: "Sunnat Kholmatov", age: 34, city: "Ferghana", joinedAt: "2024-06-05" },
-  { name: "Gulnora Hamdamova", age: 23, city: "Ferghana", joinedAt: "2024-11-02" },
-  { name: "Bahrom Sultonov", age: 30, city: "Ferghana", joinedAt: "2024-02-26" },
-
-  { name: "Laziz Mamatkulov", age: 25, city: "Namangan", joinedAt: "2024-04-15" },
-  { name: "Gulruh Ergasheva", age: 28, city: "Namangan", joinedAt: "2024-03-08" },
-  { name: "Akmal Narziqulov", age: 32, city: "Namangan", joinedAt: "2024-09-28" },
-  { name: "Malika Zufarova", age: 22, city: "Namangan", joinedAt: "2024-06-30" },
-
-  { name: "Zafar Rasulov", age: 29, city: "Andijon", joinedAt: "2024-07-11" },
-  { name: "Nodira Khaitova", age: 27, city: "Andijon", joinedAt: "2024-05-09" },
-  { name: "Kamron Saidaliev", age: 24, city: "Andijon", joinedAt: "2024-08-18" },
-  { name: "Madina Abdullaeva", age: 31, city: "Andijon", joinedAt: "2024-10-07" },
-
-  { name: "Shukhrat Murodov", age: 36, city: "Sirdaryo", joinedAt: "2024-01-21" },
-  { name: "Zebo Qo'chqorova", age: 25, city: "Sirdaryo", joinedAt: "2024-06-12" },
-  { name: "Sirojiddin Tolibov", age: 20, city: "Sirdaryo", joinedAt: "2024-07-30" },
-
-  { name: "Yulduz Sobirova", age: 28, city: "Jizzakh", joinedAt: "2024-04-27" },
-  { name: "Miraziz Tohirov", age: 35, city: "Jizzakh", joinedAt: "2024-02-14" },
-  { name: "Rano Po'latova", age: 23, city: "Jizzakh", joinedAt: "2024-09-05" },
-
-  { name: "Rustam Khudoyberdiyev", age: 32, city: "Samarkand", joinedAt: "2024-05-02" },
-  { name: "Nilufar Karimkhonova", age: 30, city: "Samarkand", joinedAt: "2024-03-19" },
-  { name: "Saidjon Bahromov", age: 26, city: "Samarkand", joinedAt: "2024-07-03" },
-  { name: "Aziza Tohirova", age: 22, city: "Samarkand", joinedAt: "2024-08-26" },
-  { name: "Sherzod Aripov", age: 34, city: "Samarkand", joinedAt: "2024-10-15" },
-
-  { name: "Gulbahor Zokirova", age: 29, city: "Kashkadarya", joinedAt: "2024-04-02" },
-  { name: "Oybek Burkhanov", age: 33, city: "Kashkadarya", joinedAt: "2024-02-23" },
-  { name: "Saodat Raimova", age: 24, city: "Kashkadarya", joinedAt: "2024-09-14" },
-  { name: "Shahzod Mukhammedov", age: 31, city: "Kashkadarya", joinedAt: "2024-06-21" },
-
-  { name: "Lola Qurbonova", age: 27, city: "Surkhandarya", joinedAt: "2024-05-28" },
-  { name: "Elyor Khasanov", age: 35, city: "Surkhandarya", joinedAt: "2024-03-04" },
-  { name: "Munira Turaeva", age: 21, city: "Surkhandarya", joinedAt: "2024-08-08" },
-  { name: "Umidjon Gapparov", age: 29, city: "Surkhandarya", joinedAt: "2024-11-06" },
-
-  { name: "Dilya Dospanova", age: 28, city: "Karakalpakstan", joinedAt: "2024-02-08" },
-  { name: "Bakhodir Yusupov", age: 38, city: "Karakalpakstan", joinedAt: "2024-06-07" },
-  { name: "Samira Nukusova", age: 24, city: "Karakalpakstan", joinedAt: "2024-07-22" },
-  { name: "Azamat Qaldayev", age: 33, city: "Karakalpakstan", joinedAt: "2024-10-19" },
-
-  { name: "Farida Usmanova", age: 26, city: "Navoi", joinedAt: "2024-02-02" },
-  { name: "Ravshan Khaydarov", age: 34, city: "Navoi", joinedAt: "2024-04-18" },
-  { name: "Malohat Umarova", age: 29, city: "Navoi", joinedAt: "2024-09-25" },
-
-  { name: "Behruz Alimov", age: 30, city: "Khorezm", joinedAt: "2024-05-11" },
-  { name: "Dildora Jalilova", age: 27, city: "Khorezm", joinedAt: "2024-07-17" },
-  { name: "Suhrob Qodirov", age: 33, city: "Khorezm", joinedAt: "2024-08-29" },
-  { name: "Rayhona Erkinova", age: 22, city: "Khorezm", joinedAt: "2024-03-31" },
-
-  { name: "Jasur Mirzayev", age: 28, city: "Bukhoro", joinedAt: "2024-06-09" },
-  { name: "Madina Tojiboyeva", age: 25, city: "Bukhoro", joinedAt: "2024-05-15" },
-  { name: "Ismoil Rahmatullaev", age: 31, city: "Bukhoro", joinedAt: "2024-10-23" },
-  { name: "Shirin Adkhamova", age: 23, city: "Bukhoro", joinedAt: "2024-01-29" },
+  // Khorezm/Xorazm users
+  { name: "Akmal Karimov", city: "khorezm", age: 25, joinedAt: "2023-01-15T10:30:00.000Z" },
+  { name: "Bekzod Toshmatov", city: "khorezm", age: 28, joinedAt: "2023-02-20T14:15:00.000Z" },
+  { name: "Davron Nizomov", city: "xorazm", age: 32, joinedAt: "2023-03-10T09:45:00.000Z" },
+  { name: "Elyor Rahimov", city: "xorazm", age: 24, joinedAt: "2023-04-05T16:20:00.000Z" },
+  { name: "Farhod Yusupov", city: "khorezm", age: 29, joinedAt: "2023-05-12T11:00:00.000Z" },
+  
+  // Ferghana/Farg'ona users
+  { name: "G'ayrat Alimov", city: "ferghana", age: 26, joinedAt: "2023-01-20T13:30:00.000Z" },
+  { name: "Hasan Hasanov", city: "ferghana", age: 31, joinedAt: "2023-02-15T10:15:00.000Z" },
+  { name: "Ibrohim Ibrohimov", city: "farg'ona", age: 27, joinedAt: "2023-03-25T15:45:00.000Z" },
+  { name: "Jahongir Jalilov", city: "farg'ona", age: 23, joinedAt: "2023-04-18T12:30:00.000Z" },
+  { name: "Kamol Kamolov", city: "ferghana", age: 30, joinedAt: "2023-05-08T14:00:00.000Z" },
+  
+  // Andijon users
+  { name: "Laziz Murodov", city: "andijon", age: 25, joinedAt: "2023-01-10T09:20:00.000Z" },
+  { name: "Murod Nodirov", city: "andijon", age: 28, joinedAt: "2023-02-22T11:45:00.000Z" },
+  { name: "Nodir Olimov", city: "andijon", age: 26, joinedAt: "2023-03-15T13:10:00.000Z" },
+  { name: "Olim Qodirov", city: "andijon", age: 29, joinedAt: "2023-04-20T10:30:00.000Z" },
+  { name: "Po'lat Rustamov", city: "andijon", age: 24, joinedAt: "2023-05-05T15:20:00.000Z" },
+  
+  // Surxondaryo/Surkhandarya users
+  { name: "Qodir Sardorov", city: "surkhandarya", age: 27, joinedAt: "2023-01-25T12:00:00.000Z" },
+  { name: "Rustam Temurov", city: "surxondaryo", age: 31, joinedAt: "2023-02-18T14:30:00.000Z" },
+  { name: "Sardor Umidov", city: "surkhandarya", age: 25, joinedAt: "2023-03-20T09:15:00.000Z" },
+  { name: "Temur Vohidov", city: "surxondaryo", age: 28, joinedAt: "2023-04-12T11:45:00.000Z" },
+  { name: "Umid Xurshidov", city: "surkhandarya", age: 26, joinedAt: "2023-05-15T13:20:00.000Z" },
+  
+  // Jizzax users
+  { name: "Vohid Yusupov", city: "jizzax", age: 29, joinedAt: "2023-01-30T10:00:00.000Z" },
+  { name: "Xurshid Zafarov", city: "jizzax", age: 24, joinedAt: "2023-02-25T15:30:00.000Z" },
+  { name: "Yusuf Karimov", city: "jizzax", age: 27, joinedAt: "2023-03-18T12:15:00.000Z" },
+  { name: "Zafar Toshmatov", city: "jizzax", age: 30, joinedAt: "2023-04-22T14:45:00.000Z" },
+  
+  // Namangan users
+  { name: "Aziza Karimova", city: "namangan", age: 23, joinedAt: "2023-01-15T11:20:00.000Z" },
+  { name: "Baxora Toshmatova", city: "namangan", age: 26, joinedAt: "2023-02-20T13:45:00.000Z" },
+  { name: "Dilnoza Nizomova", city: "namangan", age: 25, joinedAt: "2023-03-12T10:30:00.000Z" },
+  { name: "Elena Rahimova", city: "namangan", age: 28, joinedAt: "2023-04-18T15:00:00.000Z" },
+  
+  // Buxoro users
+  { name: "Fotima Yusupova", city: "buxoro", age: 24, joinedAt: "2023-01-22T12:30:00.000Z" },
+  { name: "Gulnora Alimova", city: "buxoro", age: 27, joinedAt: "2023-02-28T14:15:00.000Z" },
+  { name: "Hilola Hasanova", city: "buxoro", age: 26, joinedAt: "2023-03-25T11:45:00.000Z" },
+  
+  // Samarqand users
+  { name: "Iroda Ibrohimova", city: "samarqand", age: 29, joinedAt: "2023-01-18T13:20:00.000Z" },
+  { name: "Jasmina Jalilova", city: "samarqand", age: 25, joinedAt: "2023-02-24T10:30:00.000Z" },
+  { name: "Kamola Kamolova", city: "samarqand", age: 28, joinedAt: "2023-03-20T15:15:00.000Z" },
+  
+  // Toshkent users
+  { name: "Laylo Murodova", city: "toshkent", age: 26, joinedAt: "2023-01-25T12:00:00.000Z" },
+  { name: "Madina Nodirova", city: "toshkent", age: 24, joinedAt: "2023-02-22T14:30:00.000Z" },
+  { name: "Nigora Olimova", city: "toshkent", age: 27, joinedAt: "2023-03-18T11:15:00.000Z" },
+  
+  // Qashqadaryo users
+  { name: "Oydin Qodirova", city: "qashqadaryo", age: 25, joinedAt: "2023-01-20T13:45:00.000Z" },
+  { name: "Parvina Rustamova", city: "qashqadaryo", age: 28, joinedAt: "2023-02-26T10:20:00.000Z" },
+  
+  // Qoraqalpog'iston users
+  { name: "Qumri Sardorova", city: "qoraqalpog'iston", age: 26, joinedAt: "2023-01-28T15:00:00.000Z" },
+  { name: "Rano Temurova", city: "qoraqalpog'iston", age: 24, joinedAt: "2023-02-24T12:30:00.000Z" },
+  
+  // Navoiy users
+  { name: "Sabina Umidova", city: "navoiy", age: 27, joinedAt: "2023-01-22T11:15:00.000Z" },
+  
+  // Sirdaryo users
+  { name: "Tanzila Vohidova", city: "sirdaryo", age: 25, joinedAt: "2023-01-30T14:45:00.000Z" },
 ];
+
+// Export default for compatibility
+export default users;

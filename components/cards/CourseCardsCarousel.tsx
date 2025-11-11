@@ -109,29 +109,35 @@ export function CourseCardsCarousel({ courses }: CourseCardsCarouselProps) {
   }, [maxIndex]);
 
   return (
-    <div className="relative w-full">
+    <div className="course-cards-wrapper">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-semibold text-slate-900">Kurslar</h2>
+      <div className="course-cards-header">
+        <h2 className="course-cards-title">Kurslar</h2>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-3 rounded-lg border border-slate-100 bg-white px-3 py-2 shadow-sm transition-all duration-200 ease-out hover:bg-slate-50 hover:shadow-md">
-            <DatePicker
-              value={startDate}
-              onChange={setStartDate}
-              label="From"
-              placeholder="Select start date"
-              buttonClassName="min-w-[11rem] border-none bg-transparent px-0 py-0 text-left text-sm font-semibold text-slate-700 shadow-none hover:-translate-y-0 hover:shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-              align="left"
-            />
-            <div className="w-px h-4 bg-slate-200"></div>
-            <DatePicker
-              value={endDate}
-              onChange={setEndDate}
-              label="To"
-              placeholder="Select end date"
-              buttonClassName="min-w-[11rem] border-none bg-transparent px-0 py-0 text-left text-sm font-semibold text-slate-700 shadow-none hover:-translate-y-0 hover:shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-              align="right"
-            />
+          <div className="date-filter-modern-compact">
+            <div className="date-filter-wrapper">
+              <DatePicker
+                value={startDate}
+                onChange={setStartDate}
+                label="From"
+                placeholder="Select start date"
+                buttonClassName="min-w-[11rem] border-none bg-transparent px-0 py-0 text-left text-sm font-semibold text-slate-700 shadow-none hover:-translate-y-0 hover:shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 date-picker-modern"
+                align="left"
+              />
+              <div className="date-filter-divider">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.4"/>
+                </svg>
+              </div>
+              <DatePicker
+                value={endDate}
+                onChange={setEndDate}
+                label="To"
+                placeholder="Select end date"
+                buttonClassName="min-w-[11rem] border-none bg-transparent px-0 py-0 text-left text-sm font-semibold text-slate-700 shadow-none hover:-translate-y-0 hover:shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 date-picker-modern"
+                align="right"
+              />
+            </div>
           </div>
           <motion.button
             onClick={goToPrev}
@@ -139,11 +145,10 @@ export function CourseCardsCarousel({ courses }: CourseCardsCarouselProps) {
             whileHover={canGoPrev && !isScrolling ? { scale: 1.1 } : {}}
             whileTap={canGoPrev && !isScrolling ? { scale: 0.95 } : {}}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className={`p-2.5 rounded-lg transition-all duration-200 ease-out ${
-              canGoPrev && !isScrolling
-                ? "bg-white hover:bg-slate-50 text-slate-700 shadow-sm hover:shadow-md cursor-pointer active:scale-95"
-                : "bg-slate-100 text-slate-400 cursor-not-allowed"
+            className={`course-nav-button course-nav-button-left ${
+              !canGoPrev || isScrolling ? "opacity-30 pointer-events-none" : ""
             }`}
+            style={!canGoPrev || isScrolling ? { opacity: 0.3, pointerEvents: "none" } : {}}
             aria-label="Previous courses"
           >
             <motion.svg
@@ -170,11 +175,10 @@ export function CourseCardsCarousel({ courses }: CourseCardsCarouselProps) {
             whileHover={canGoNext && !isScrolling ? { scale: 1.1 } : {}}
             whileTap={canGoNext && !isScrolling ? { scale: 0.95 } : {}}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className={`p-2.5 rounded-lg transition-all duration-200 ease-out ${
-              canGoNext && !isScrolling
-                ? "bg-white hover:bg-slate-50 text-slate-700 shadow-sm hover:shadow-md cursor-pointer active:scale-95"
-                : "bg-slate-100 text-slate-400 cursor-not-allowed"
+            className={`course-nav-button course-nav-button-right ${
+              !canGoNext || isScrolling ? "opacity-30 pointer-events-none" : ""
             }`}
+            style={!canGoNext || isScrolling ? { opacity: 0.3, pointerEvents: "none" } : {}}
             aria-label="Next courses"
           >
             <motion.svg
@@ -199,10 +203,10 @@ export function CourseCardsCarousel({ courses }: CourseCardsCarouselProps) {
       </div>
 
       {/* Carousel Container */}
-      <div className="relative overflow-hidden rounded-xl">
+      <div className="course-cards-scroll-wrapper">
         <div
           ref={scrollContainerRef}
-          className="flex gap-6 overflow-x-auto scroll-smooth pb-4 scrollbar-hide"
+          className="course-cards-container"
           style={{
             WebkitOverflowScrolling: "touch",
           }}
@@ -213,7 +217,6 @@ export function CourseCardsCarousel({ courses }: CourseCardsCarouselProps) {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="flex-shrink-0"
             >
               <CourseCard
                 id={course.id}

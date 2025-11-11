@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
 import { useMainStats } from "@/hooks/useMainStats";
 
-const UsersIcon = () => (
+const CertificatesIcon = () => (
   <motion.svg
     className="card-header-icon"
     width={36}
@@ -22,51 +22,40 @@ const UsersIcon = () => (
       width={30}
       height={30}
       rx={12}
-      fill="rgba(147, 51, 234, 0.12)"
-      stroke="rgba(147, 51, 234, 0.32)"
+      fill="rgba(34, 197, 94, 0.12)"
+      stroke="rgba(34, 197, 94, 0.32)"
       strokeWidth={1.5}
     />
-    <circle
-      cx={18}
-      cy={14.5}
-      r={5}
-      stroke="#9333ea"
-      strokeWidth={1.6}
-      fill="rgba(147, 51, 234, 0.18)"
-    />
     <path
-      d="M11.5 26C12.4 22.8 15.1 20.5 18 20.5C20.9 20.5 23.6 22.8 24.5 26"
-      stroke="#a855f7"
+      d="M12 14L18 10L24 14V22C24 23.1 23.1 24 22 24H14C12.9 24 12 23.1 12 22V14Z"
+      stroke="#22c55e"
       strokeWidth={1.6}
       strokeLinecap="round"
       strokeLinejoin="round"
+      fill="rgba(34, 197, 94, 0.08)"
     />
     <path
-      d="M23.4 16.5C25.3 16.8 26.8 18.5 27 20.5"
-      stroke="#c084fc"
+      d="M16 18L18 20L20 18"
+      stroke="#22c55e"
       strokeWidth={1.4}
       strokeLinecap="round"
+      strokeLinejoin="round"
     />
-    <path
-      d="M12.6 16.5C10.7 16.8 9.2 18.5 9 20.5"
-      stroke="#c084fc"
-      strokeWidth={1.4}
-      strokeLinecap="round"
-    />
+    <circle cx={18} cy={19} r={1} fill="#22c55e" />
   </motion.svg>
 );
 
-interface UsersCardProps {
+interface CertificatesCardProps {
   title?: string;
   animate?: boolean;
   delay?: number;
 }
 
-export function UsersCard({
-  title = "Foydalanuvchilar",
+export function CertificatesCard({
+  title = "Sertifikat olganlar soni",
   animate = true,
   delay = 0,
-}: UsersCardProps) {
+}: CertificatesCardProps) {
   const { data, loading } = useMainStats();
 
   const cardVariants = {
@@ -102,14 +91,14 @@ export function UsersCard({
         <div>
           <span className="card-title">{title}</span>
         </div>
-        <UsersIcon />
+        <CertificatesIcon />
       </header>
       <div className="card-metric">
         <h2>
           {loading ? (
             <span>Loading...</span>
           ) : (
-            <AnimatedNumber value={data?.users || 0} />
+            <AnimatedNumber value={data?.certificates || 0} />
           )}
         </h2>
       </div>

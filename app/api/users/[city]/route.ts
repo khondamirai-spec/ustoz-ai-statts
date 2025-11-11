@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-
-import { users } from "@/lib/fakeData";
+import { users } from "../../../lib/fakeData";
 
 interface RouteContext {
   params: Promise<{
@@ -9,17 +8,32 @@ interface RouteContext {
 }
 
 export async function GET(_: Request, context: RouteContext) {
-  const params = await context.params;
-  const cityParam = params.city ?? "";
-  const normalized = cityParam.trim().toLowerCase();
+  try {
+    const params = await context.params;
+    const cityParam = params.city ?? "";
+    const normalized = cityParam.trim().toLowerCase();
 
-  const filtered = users.filter(
-    (user) => user.city.toLowerCase() === normalized,
-  );
+    if (!users || !Array.isArray(users)) {
+      return NextResponse.json(
+        { error: "Users data not available" },
+        { status: 500 }
+      );
+    }
 
-  return NextResponse.json({
-    city: cityParam,
-    count: filtered.length,
-    users: filtered,
-  });
+    const filtered = users.filter(
+      (user) => user.city.toLowerCase() === normalized,
+    );
+
+    return NextResponse.json({
+      city: cityParam,
+      count: filtered.length,
+      users: filtered,
+    });
+  } catch (error) {
+    console.error("Error in users API route:", error);
+    return NextResponse.json(
+      { error: "Internal server error", details: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
+  }
 }

@@ -77,35 +77,70 @@ const regionStats = [
 export function RegionStatsTable() {
   return (
     <div className="flex flex-col h-full min-h-[420px]">
-      <header className="mb-4">
-        <h2 className="text-lg font-semibold text-slate-900">Viloyatlar statistikasi</h2>
-        <p className="text-sm text-slate-500">Foydalanuvchilar va ko&apos;rishlar</p>
+      <header className="mb-5 relative">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="relative p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-xl opacity-75 blur-sm"></div>
+            <svg
+              className="relative w-5 h-5 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-lg font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent">
+            Viloyatlar statistikasi
+          </h2>
+        </div>
+        <p className="text-sm text-slate-600 font-medium ml-11">Foydalanuvchilar va ko&apos;rishlar</p>
       </header>
 
-      <div className="flex-1 max-h-[360px] overflow-y-auto overflow-x-hidden border border-slate-200 rounded-xl pr-2 overscroll-contain scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 hover:scrollbar-thumb-slate-400">
-        <table className="min-w-full divide-y divide-slate-200 text-xs">
-          <thead className="bg-slate-50 text-slate-500 uppercase text-[11px] tracking-wide sticky top-0 z-10">
+      <div className="flex-1 max-h-[360px] overflow-y-auto overflow-x-hidden border border-slate-200/80 rounded-xl pr-2 overscroll-contain scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 hover:scrollbar-thumb-slate-400 shadow-sm bg-white/50 backdrop-blur-sm">
+        <table className="min-w-full divide-y divide-slate-200/60 text-xs">
+          <thead className="bg-gradient-to-r from-slate-50 to-slate-100/50 text-slate-600 uppercase text-[11px] tracking-wide sticky top-0 z-10 backdrop-blur-sm">
             <tr>
-              <th className="px-4 py-3 text-left font-semibold">№</th>
-              <th className="px-4 py-3 text-left font-semibold">Viloyat</th>
-              <th className="px-4 py-3 text-right font-semibold">Foydalanuvchilar</th>
-              <th className="px-4 py-3 text-right font-semibold">Ko&apos;rishlar</th>
+              <th className="px-4 py-3.5 text-left font-bold">№</th>
+              <th className="px-4 py-3.5 text-left font-bold">Viloyat</th>
+              <th className="px-4 py-3.5 text-right font-bold">Foydalanuvchilar</th>
+              <th className="px-4 py-3.5 text-right font-bold">Ko&apos;rishlar</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200">
-            {regionStats.map((region) => (
-              <tr key={region.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-4 py-2 text-slate-500">{region.id}</td>
-                <td className="px-4 py-2 font-medium text-slate-900">{region.name}</td>
-                <td className="px-4 py-2 text-right text-slate-900 font-semibold">{region.users.toLocaleString()}</td>
-                <td className="px-4 py-2 text-right text-slate-900 font-semibold flex items-center justify-end gap-2">
-                  <div className="h-1.5 w-16 rounded-full bg-slate-200 overflow-hidden">
+          <tbody className="divide-y divide-slate-200/40 bg-white/80">
+            {regionStats.map((region, index) => (
+              <tr 
+                key={region.id} 
+                className="hover:bg-gradient-to-r hover:from-slate-50/80 hover:to-purple-50/30 transition-all duration-200 group cursor-pointer"
+                style={{
+                  animationDelay: `${index * 0.02}s`,
+                }}
+              >
+                <td className="px-4 py-3 text-slate-500 font-medium group-hover:text-slate-700 transition-colors">
+                  {region.id}
+                </td>
+                <td className="px-4 py-3 font-semibold text-slate-900 group-hover:text-slate-950 transition-colors">
+                  {region.name}
+                </td>
+                <td className="px-4 py-3 text-right text-slate-900 font-bold group-hover:text-slate-950 transition-colors">
+                  {region.users.toLocaleString()}
+                </td>
+                <td className="px-4 py-3 text-right text-slate-900 font-semibold flex items-center justify-end gap-2.5 group-hover:text-slate-950 transition-colors">
+                  <div className="h-2 w-20 rounded-full bg-slate-200/80 overflow-hidden shadow-inner">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#6A5AED] to-[#C053E4]"
-                      style={{ width: `${Math.min(100, Math.max(5, (region.views / regionStats[0].views) * 100))}%` }}
+                      className="h-full rounded-full bg-gradient-to-r from-[#6A5AED] via-[#8B5CF6] to-[#C053E4] shadow-sm transition-all duration-300 group-hover:shadow-md"
+                      style={{ 
+                        width: `${Math.min(100, Math.max(5, (region.views / regionStats[0].views) * 100))}%`,
+                        boxShadow: '0 0 8px rgba(106, 90, 237, 0.3)',
+                      }}
                     />
                   </div>
-                  <span>{region.views.toLocaleString()}</span>
+                  <span className="font-bold min-w-[60px] text-right">{region.views.toLocaleString()}</span>
                 </td>
               </tr>
             ))}

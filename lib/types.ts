@@ -1,6 +1,8 @@
 export interface User {
   name: string;
-  age: number;
   city: string;
-  joinedAt: string;
+  age: number;
+  joinedAt: string; // ISO date string
 }
+
+

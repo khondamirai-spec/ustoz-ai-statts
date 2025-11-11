@@ -12,7 +12,7 @@ import {
 import type { MouseEvent } from "react";
 import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
 import { DatePicker } from "@/components/shared/DatePicker";
-import { useNewUsersData } from "@/hooks/useStatsData";
+import { useDailyUsers } from "@/hooks/useDailyUsers";
 
 interface ChartPoint {
   x: number;
@@ -144,14 +144,45 @@ export function WeeklyMonthlyYearlyCard({
   // Use undefined initially to avoid hydration mismatch, then set in useEffect
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [startDateStr, setStartDateStr] = useState<string>("");
+  const [endDateStr, setEndDateStr] = useState<string>("");
   
   // Set dates on client side only to avoid hydration mismatch
   useEffect(() => {
-    setStartDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
-    setEndDate(new Date());
+    const start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const end = new Date();
+    setStartDate(start);
+    setEndDate(end);
+    setStartDateStr(start.toISOString().split("T")[0]);
+    setEndDateStr(end.toISOString().split("T")[0]);
   }, []);
   
-  const data = useNewUsersData(startDate, endDate);
+  const dailyUsersData = useDailyUsers(startDateStr, endDateStr);
+  
+  // Transform API data to match the component's expected format
+  const data = useMemo(() => {
+    const chartData = dailyUsersData.data.map((item) => {
+      const date = new Date(item.date);
+      return {
+        date: date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        axisLabel: date.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "2-digit",
+        }),
+        isoDate: date.toISOString(),
+        users: item.count,
+      };
+    });
+    
+    return {
+      totalUsers: dailyUsersData.total,
+      change: dailyUsersData.growth,
+      chartData,
+    };
+  }, [dailyUsersData]);
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -306,12 +337,8 @@ export function WeeklyMonthlyYearlyCard({
     setHoveredIndex(null);
   }, []);
 
-  const dailyAverage = hasData
-    ? Math.round(data.totalUsers / data.chartData.length)
-    : 0;
-  const peakUsers = hasData
-    ? Math.max(...data.chartData.map((d) => d.users))
-    : 0;
+  const dailyAverage = dailyUsersData.dailyAvg;
+  const peakUsers = dailyUsersData.peakDay;
 
   const hoveredPoint =
     hoveredIndex !== null ? points[hoveredIndex] : null;
@@ -339,46 +366,70 @@ export function WeeklyMonthlyYearlyCard({
           <p className="new-users-subtitle">New Users Registration Overview</p>
         </div>
         
-        <div className="date-filter">
-          <DatePicker
-            value={startDate}
-            onChange={setStartDate}
-            label="From"
-            placeholder="Select start date"
-            buttonClassName="min-w-[13rem]"
-            align="left"
-          />
-          <DatePicker
-            value={endDate}
-            onChange={setEndDate}
-            label="To"
-            placeholder="Select end date"
-            buttonClassName="min-w-[13rem]"
-            align="right"
-          />
+        <div className="date-filter-modern">
+          <div className="date-filter-wrapper">
+            <DatePicker
+              value={startDate}
+              onChange={(date) => {
+                setStartDate(date);
+                setStartDateStr(date.toISOString().split("T")[0]);
+              }}
+              label="From"
+              placeholder="Select start date"
+              buttonClassName="min-w-[13rem] date-picker-modern"
+              align="left"
+            />
+            <div className="date-filter-divider">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.4"/>
+              </svg>
+            </div>
+            <DatePicker
+              value={endDate}
+              onChange={(date) => {
+                setEndDate(date);
+                setEndDateStr(date.toISOString().split("T")[0]);
+              }}
+              label="To"
+              placeholder="Select end date"
+              buttonClassName="min-w-[13rem] date-picker-modern"
+              align="right"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="new-users-stats">
-        <div className="stat-main">
-          <span className="stat-label">Total New Users</span>
-          <div className="stat-value-row">
-            <strong className="stat-value">
-              <AnimatedNumber value={data.totalUsers} />
-            </strong>
-            <span
-              className={`stat-change ${data.change >= 0 ? "positive" : "negative"}`}
-              data-symbol={data.change >= 0 ? "↑" : "↓"}
-            >
-              {data.change >= 0 ? '+' : ''}{data.change}%
-            </span>
+      {dailyUsersData.loading ? (
+        <div className="new-users-stats">
+          <div className="stat-main">
+            <span className="stat-label">Total New Users</span>
+            <div className="stat-value-row">
+              <strong className="stat-value">Loading...</strong>
+            </div>
           </div>
         </div>
-        <div className="stat-meta">
-          <span>Daily Average: {dailyAverage}</span>
-          <span>Peak Day: {peakUsers}</span>
+      ) : (
+        <div className="new-users-stats">
+          <div className="stat-main">
+            <span className="stat-label">Total New Users</span>
+            <div className="stat-value-row">
+              <strong className="stat-value">
+                <AnimatedNumber value={data.totalUsers} />
+              </strong>
+              <span
+                className={`stat-change ${data.change >= 0 ? "positive" : "negative"}`}
+                data-symbol={data.change >= 0 ? "↑" : "↓"}
+              >
+                {data.change >= 0 ? '+' : ''}{data.change}%
+              </span>
+            </div>
+          </div>
+          <div className="stat-meta">
+            <span>Daily Average: {dailyAverage}</span>
+            <span>Peak Day: {peakUsers}</span>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Area Chart */}
       <div className="new-users-chart">

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { DashboardGridLayout } from "@/components/layout/DashboardGridLayout";
 import { UsersCard } from "@/components/cards/UsersCard";
+import { LessonsCard } from "@/components/cards/LessonsCard";
+import { CertificatesCard } from "@/components/cards/CertificatesCard";
 import { IncomeCard } from "@/components/cards/IncomeCard";
 import { WeeklyMonthlyYearlyCard } from "@/components/cards/WeeklyMonthlyYearlyCard";
 import { TallSalesCard } from "@/components/cards/TallSalesCard";
@@ -11,6 +13,7 @@ import { CourseCardsCarousel } from "@/components/cards/CourseCardsCarousel";
 import { RegionsList } from "@/components/cards/RegionsList";
 import { RegionStatsTable } from "@/components/cards/RegionStatsTable";
 import { RegionPanel } from "@/components/panels/RegionPanel";
+import { ApiTestCard } from "@/components/cards/ApiTestCard";
 import ChartCard from "@/components/ChartCard";
 import { genderData } from "@/data/gender";
 import { ageData } from "@/data/age";
@@ -96,8 +99,9 @@ export default function DashboardPage() {
         <DashboardGridLayout>
           {/* Row 1: Top Stats Cards */}
           <UsersCard delay={0} />
-          <IncomeCard data={incomeData} delay={1} />
-          <SimpleStatCard title="Active Courses" value={156} change={12.5} delay={2} />
+          <LessonsCard delay={1} />
+          <CertificatesCard delay={2} />
+          <IncomeCard data={incomeData} delay={3} />
 
           {/* Row 2: Large Chart Card */}
           <WeeklyMonthlyYearlyCard delay={4} />
@@ -113,8 +117,13 @@ export default function DashboardPage() {
             <RegionStatsTable />
           </div>
 
+          {/* Row 4.5: API Test Card */}
+          <div className="card" data-delay="15.5" style={{ gridColumn: "span 12" }}>
+            <ApiTestCard />
+          </div>
+
           {/* Row 5: Course Carousel - Full Width */}
-          <div id="courses" className="card card-full" data-delay="16">
+          <div id="courses" className="card-full" data-delay="16" style={{ gridColumn: "span 12", padding: 0 }}>
             <CourseCardsCarousel courses={courses} />
           </div>
 

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
 import { MiniBarChart } from "@/components/charts/MiniBarChart";
 import type { VideoViewsData } from "@/hooks/useVideoViewsData";
+import { useDailyViews } from "@/hooks/useDailyViews";
 
 const TallSalesIcon = () => (
   <motion.svg
@@ -53,6 +54,8 @@ export function TallSalesCard({
   animate = true, 
   delay = 0 
 }: TallSalesCardProps) {
+  const { today, chart, loading } = useDailyViews();
+  
   const safeData = {
     value: data?.value ?? 0,
     change: data?.change ?? 0,
@@ -102,7 +105,11 @@ export function TallSalesCard({
         </p>
         <div className="card-metric">
           <h2>
-            <AnimatedNumber value={safeData.value} />
+            {loading ? (
+              <span>Loading...</span>
+            ) : (
+              <AnimatedNumber value={today} />
+            )}
           </h2>
           <motion.small
           initial={animate ? { opacity: 0, x: 16 } : undefined}
@@ -113,7 +120,7 @@ export function TallSalesCard({
           </motion.small>
         </div>
       </div>
-      <MiniBarChart animate={animate} delay={delay} />
+      <MiniBarChart chartData={chart} animate={animate} delay={delay} />
       <div className="card-total-label">
         <div className="stat-main">
           <span className="stat-label">JAMI KO'RGANALAR</span>
