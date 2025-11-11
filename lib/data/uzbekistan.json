@@ -1,0 +1,214 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tashkent"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [69.1, 41.2],
+          [69.4, 41.2],
+          [69.4, 41.4],
+          [69.1, 41.4],
+          [69.1, 41.2]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Andijan"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [72.0, 40.5],
+          [72.5, 40.5],
+          [72.5, 41.0],
+          [72.0, 41.0],
+          [72.0, 40.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bukhara"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [64.0, 39.5],
+          [65.0, 39.5],
+          [65.0, 40.5],
+          [64.0, 40.5],
+          [64.0, 39.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Fergana"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [71.0, 40.2],
+          [71.8, 40.2],
+          [71.8, 40.8],
+          [71.0, 40.8],
+          [71.0, 40.2]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jizzakh"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [67.5, 40.0],
+          [68.5, 40.0],
+          [68.5, 40.8],
+          [67.5, 40.8],
+          [67.5, 40.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Karakalpakstan"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [58.0, 41.5],
+          [62.0, 41.5],
+          [62.0, 44.0],
+          [58.0, 44.0],
+          [58.0, 41.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kashkadarya"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [65.0, 38.5],
+          [67.0, 38.5],
+          [67.0, 40.0],
+          [65.0, 40.0],
+          [65.0, 38.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Navoiy"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [64.0, 40.0],
+          [65.5, 40.0],
+          [65.5, 41.5],
+          [64.0, 41.5],
+          [64.0, 40.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Namangan"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [71.0, 40.8],
+          [72.0, 40.8],
+          [72.0, 41.5],
+          [71.0, 41.5],
+          [71.0, 40.8]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Samarkand"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [66.0, 39.5],
+          [67.5, 39.5],
+          [67.5, 40.5],
+          [66.0, 40.5],
+          [66.0, 39.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sirdaryo"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [68.0, 40.2],
+          [69.0, 40.2],
+          [69.0, 41.0],
+          [68.0, 41.0],
+          [68.0, 40.2]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Surkhandarya"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [67.0, 37.5],
+          [68.5, 37.5],
+          [68.5, 39.0],
+          [67.0, 39.0],
+          [67.0, 37.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tashkent Region"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [68.5, 40.8],
+          [70.5, 40.8],
+          [70.5, 41.8],
+          [68.5, 41.8],
+          [68.5, 40.8]
+        ]]
+      }
+    }
+  ]
+}
+
