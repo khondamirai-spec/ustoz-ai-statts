@@ -11,6 +11,41 @@ interface SimpleStatCardProps {
   delay?: number;
 }
 
+const SimpleStatIcon = () => (
+  <motion.svg
+    className="card-header-icon"
+    width={36}
+    height={36}
+    viewBox="0 0 36 36"
+    fill="none"
+    aria-hidden="true"
+    focusable="false"
+    whileHover={{ scale: 1.08, rotate: 2 }}
+    transition={{ duration: 0.22 }}
+  >
+    <rect
+      x={3}
+      y={3}
+      width={30}
+      height={30}
+      rx={12}
+      fill="rgba(14, 165, 233, 0.12)"
+      stroke="rgba(14, 165, 233, 0.36)"
+      strokeWidth={1.5}
+    />
+    <path
+      d="M9 22.5L13.2 16.2L17.8 21.1L24 11"
+      stroke="#0ea5e9"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <circle cx={13.4} cy={16} r={1.4} fill="#0ea5e9" />
+    <circle cx={18} cy={21.2} r={1.3} fill="#0ea5e9" />
+    <circle cx={24} cy={11} r={1.6} fill="#38bdf8" />
+  </motion.svg>
+);
+
 export function SimpleStatCard({
   title,
   value,
@@ -25,7 +60,7 @@ export function SimpleStatCard({
       y: 0,
       transition: {
         duration: 0.48,
-        ease: [0.22, 1, 0.36, 1],
+        ease: [0.22, 1, 0.36, 1] as const,
         delay: delay * 0.08,
       },
     },
@@ -51,13 +86,7 @@ export function SimpleStatCard({
         <div>
           <span className="card-title">{title}</span>
         </div>
-        <motion.span
-          className="floating-arrow"
-          whileHover={{ rotate: 90 }}
-          transition={{ duration: 0.2 }}
-        >
-          ↗
-        </motion.span>
+        <SimpleStatIcon />
       </header>
       <div className="card-metric">
         <h2>

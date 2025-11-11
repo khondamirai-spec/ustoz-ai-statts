@@ -4,6 +4,58 @@ import { motion } from "framer-motion";
 import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
 import type { IncomeData } from "@/hooks/useIncomeData";
 
+const IncomeIcon = () => (
+  <motion.svg
+    className="card-header-icon"
+    width={36}
+    height={36}
+    viewBox="0 0 36 36"
+    fill="none"
+    aria-hidden="true"
+    focusable="false"
+    whileHover={{ scale: 1.08 }}
+    transition={{ duration: 0.22 }}
+  >
+    <rect
+      x={3}
+      y={3}
+      width={30}
+      height={30}
+      rx={12}
+      fill="rgba(245, 158, 11, 0.12)"
+      stroke="rgba(245, 158, 11, 0.32)"
+      strokeWidth={1.5}
+    />
+    <path
+      d="M12 14.5C12 13.1193 13.1193 12 14.5 12H22.5C23.8807 12 25 13.1193 25 14.5V21.5C25 22.8807 23.8807 24 22.5 24H14.5C13.1193 24 12 22.8807 12 21.5V14.5Z"
+      stroke="#f59e0b"
+      strokeWidth={1.6}
+      fill="rgba(245, 158, 11, 0.18)"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M11 17H17.5C19.1569 17 20.5 18.3431 20.5 20C20.5 21.6569 19.1569 23 17.5 23H11"
+      stroke="#fbbf24"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <circle cx={19.5} cy={20} r={1} fill="#facc15" />
+    <path
+      d="M14.5 12L15.4 9.8"
+      stroke="#fcd34d"
+      strokeWidth={1.4}
+      strokeLinecap="round"
+    />
+    <path
+      d="M20.5 12L21.4 9.8"
+      stroke="#fcd34d"
+      strokeWidth={1.4}
+      strokeLinecap="round"
+    />
+  </motion.svg>
+);
+
 interface IncomeCardProps {
   data: IncomeData;
   title?: string;
@@ -57,13 +109,7 @@ export function IncomeCard({
         <div>
           <span className="card-title">{title}</span>
         </div>
-        <motion.span
-          className="floating-arrow"
-          whileHover={{ rotate: 90 }}
-          transition={{ duration: 0.2 }}
-        >
-          ↗
-        </motion.span>
+        <IncomeIcon />
       </header>
       <div className="card-metric">
         <h2>

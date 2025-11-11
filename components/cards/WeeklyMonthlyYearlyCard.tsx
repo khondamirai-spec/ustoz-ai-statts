@@ -11,6 +11,7 @@ import {
 } from "react";
 import type { MouseEvent } from "react";
 import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
+import { DatePicker } from "@/components/shared/DatePicker";
 import { useNewUsersData } from "@/hooks/useStatsData";
 
 interface ChartPoint {
@@ -172,16 +173,6 @@ export function WeeklyMonthlyYearlyCard({
       transition: { duration: 0.22 },
     },
   } : undefined;
-
-  const formatDate = (date: Date | undefined, isStartDate: boolean = false) => {
-    if (!date) {
-      // Return default dates when undefined to avoid errors
-      const defaultEnd = new Date('2024-01-31T00:00:00.000Z');
-      const defaultStart = new Date('2024-01-01T00:00:00.000Z');
-      return isStartDate ? defaultStart.toISOString().split('T')[0] : defaultEnd.toISOString().split('T')[0];
-    }
-    return date.toISOString().split('T')[0];
-  };
 
   const hasData = data.chartData.length > 0;
   const maxUsers = hasData
@@ -349,26 +340,22 @@ export function WeeklyMonthlyYearlyCard({
         </div>
         
         <div className="date-filter">
-          <div className="date-input-group">
-            <label htmlFor="start-date">From</label>
-            <input
-              id="start-date"
-              type="date"
-              value={formatDate(startDate, true)}
-              onChange={(e) => setStartDate(new Date(e.target.value))}
-              className="date-input"
-            />
-          </div>
-          <div className="date-input-group">
-            <label htmlFor="end-date">To</label>
-            <input
-              id="end-date"
-              type="date"
-              value={formatDate(endDate, false)}
-              onChange={(e) => setEndDate(new Date(e.target.value))}
-              className="date-input"
-            />
-          </div>
+          <DatePicker
+            value={startDate}
+            onChange={setStartDate}
+            label="From"
+            placeholder="Select start date"
+            buttonClassName="min-w-[13rem]"
+            align="left"
+          />
+          <DatePicker
+            value={endDate}
+            onChange={setEndDate}
+            label="To"
+            placeholder="Select end date"
+            buttonClassName="min-w-[13rem]"
+            align="right"
+          />
         </div>
       </div>
 

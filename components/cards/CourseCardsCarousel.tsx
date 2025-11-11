@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { CourseCard } from "./CourseCard";
+import { DatePicker } from "../shared/DatePicker";
 
 interface Course {
   id: number;
@@ -28,16 +29,6 @@ export function CourseCardsCarousel({ courses }: CourseCardsCarouselProps) {
     setStartDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
     setEndDate(new Date());
   }, []);
-
-  const formatDate = (date: Date | undefined, isStartDate: boolean = false) => {
-    if (!date) {
-      // Return default dates when undefined to avoid errors
-      const defaultEnd = new Date('2024-01-31T00:00:00.000Z');
-      const defaultStart = new Date('2024-01-01T00:00:00.000Z');
-      return isStartDate ? defaultStart.toISOString().split('T')[0] : defaultEnd.toISOString().split('T')[0];
-    }
-    return date.toISOString().split('T')[0];
-  };
 
   // Calculate cards per view based on screen size
   useEffect(() => {
@@ -123,28 +114,24 @@ export function CourseCardsCarousel({ courses }: CourseCardsCarouselProps) {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-semibold text-slate-900">Kurslar</h2>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm border border-slate-100 px-3 py-2 transition-all duration-200 ease-out hover:bg-slate-50 hover:shadow-md">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">FROM</span>
-              <input
-                id="course-start-date"
-                type="date"
-                value={formatDate(startDate, true)}
-                onChange={(e) => setStartDate(new Date(e.target.value))}
-                className="text-sm text-slate-700 font-medium border-none bg-transparent cursor-pointer focus:outline-none focus:ring-0 p-0 h-auto min-w-[100px]"
-              />
-            </div>
+          <div className="flex items-center gap-3 rounded-lg border border-slate-100 bg-white px-3 py-2 shadow-sm transition-all duration-200 ease-out hover:bg-slate-50 hover:shadow-md">
+            <DatePicker
+              value={startDate}
+              onChange={setStartDate}
+              label="From"
+              placeholder="Select start date"
+              buttonClassName="min-w-[11rem] border-none bg-transparent px-0 py-0 text-left text-sm font-semibold text-slate-700 shadow-none hover:-translate-y-0 hover:shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              align="left"
+            />
             <div className="w-px h-4 bg-slate-200"></div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">TO</span>
-              <input
-                id="course-end-date"
-                type="date"
-                value={formatDate(endDate, false)}
-                onChange={(e) => setEndDate(new Date(e.target.value))}
-                className="text-sm text-slate-700 font-medium border-none bg-transparent cursor-pointer focus:outline-none focus:ring-0 p-0 h-auto min-w-[100px]"
-              />
-            </div>
+            <DatePicker
+              value={endDate}
+              onChange={setEndDate}
+              label="To"
+              placeholder="Select end date"
+              buttonClassName="min-w-[11rem] border-none bg-transparent px-0 py-0 text-left text-sm font-semibold text-slate-700 shadow-none hover:-translate-y-0 hover:shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              align="right"
+            />
           </div>
           <motion.button
             onClick={goToPrev}

@@ -5,6 +5,58 @@ import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
 import { useNewUsersData } from "@/hooks/useStatsData";
 import { useEffect, useState } from "react";
 
+const UsersIcon = () => (
+  <motion.svg
+    className="card-header-icon"
+    width={36}
+    height={36}
+    viewBox="0 0 36 36"
+    fill="none"
+    aria-hidden="true"
+    focusable="false"
+    whileHover={{ scale: 1.08 }}
+    transition={{ duration: 0.22 }}
+  >
+    <rect
+      x={3}
+      y={3}
+      width={30}
+      height={30}
+      rx={12}
+      fill="rgba(147, 51, 234, 0.12)"
+      stroke="rgba(147, 51, 234, 0.32)"
+      strokeWidth={1.5}
+    />
+    <circle
+      cx={18}
+      cy={14.5}
+      r={5}
+      stroke="#9333ea"
+      strokeWidth={1.6}
+      fill="rgba(147, 51, 234, 0.18)"
+    />
+    <path
+      d="M11.5 26C12.4 22.8 15.1 20.5 18 20.5C20.9 20.5 23.6 22.8 24.5 26"
+      stroke="#a855f7"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M23.4 16.5C25.3 16.8 26.8 18.5 27 20.5"
+      stroke="#c084fc"
+      strokeWidth={1.4}
+      strokeLinecap="round"
+    />
+    <path
+      d="M12.6 16.5C10.7 16.8 9.2 18.5 9 20.5"
+      stroke="#c084fc"
+      strokeWidth={1.4}
+      strokeLinecap="round"
+    />
+  </motion.svg>
+);
+
 interface UsersCardProps {
   title?: string;
   animate?: boolean;
@@ -59,13 +111,7 @@ export function UsersCard({
         <div>
           <span className="card-title">{title}</span>
         </div>
-        <motion.span
-          className="floating-arrow"
-          whileHover={{ rotate: 90 }}
-          transition={{ duration: 0.2 }}
-        >
-          ↗
-        </motion.span>
+        <UsersIcon />
       </header>
       <div className="card-metric">
         <h2>

@@ -5,6 +5,41 @@ import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
 import { MiniBarChart } from "@/components/charts/MiniBarChart";
 import type { VideoViewsData } from "@/hooks/useVideoViewsData";
 
+const TallSalesIcon = () => (
+  <motion.svg
+    className="card-header-icon"
+    width={36}
+    height={36}
+    viewBox="0 0 36 36"
+    fill="none"
+    aria-hidden="true"
+    focusable="false"
+    whileHover={{ scale: 1.08, rotate: 1.5 }}
+    transition={{ duration: 0.22 }}
+  >
+    <rect
+      x={3}
+      y={3}
+      width={30}
+      height={30}
+      rx={12}
+      fill="rgba(16, 185, 129, 0.12)"
+      stroke="rgba(16, 185, 129, 0.32)"
+      strokeWidth={1.5}
+    />
+    <rect x={12} y={12} width={3.5} height={12} rx={1.5} fill="#10b981" />
+    <rect x={17.5} y={9} width={3.5} height={15} rx={1.5} fill="#34d399" />
+    <rect x={23} y={14.5} width={3.5} height={9.5} rx={1.5} fill="#6ee7b7" />
+    <path
+      d="M9.5 24.5C11.1 19.5 19 14.5 24 14.5"
+      stroke="#10b981"
+      strokeWidth={1.4}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </motion.svg>
+);
+
 interface TallSalesCardProps {
   data: VideoViewsData;
   title?: string;
@@ -33,7 +68,7 @@ export function TallSalesCard({
       y: 0,
       transition: {
         duration: 0.48,
-        ease: [0.22, 1, 0.36, 1],
+        ease: [0.22, 1, 0.36, 1] as const,
         delay: delay * 0.08,
       },
     },
@@ -59,13 +94,7 @@ export function TallSalesCard({
         <div>
           <span className="card-title">{title}</span>
         </div>
-        <motion.span
-          className="floating-arrow"
-          whileHover={{ rotate: 90 }}
-          transition={{ duration: 0.2 }}
-        >
-          ↗
-        </motion.span>
+        <TallSalesIcon />
       </header>
       <div>
         <p className="card-subtitle" style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.5rem', fontWeight: 600 }}>

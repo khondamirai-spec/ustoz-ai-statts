@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
 
 // Modern gradient color palette with better contrast
@@ -51,26 +51,63 @@ const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) =>
 };
 
 const ChartCard = ({ title, data }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    const currentRef = cardRef.current;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // Small delay to ensure proper animation trigger
+          setTimeout(() => setIsVisible(true), 100);
+        }
+      },
+      {
+        threshold: 0.3, // Trigger when 30% of the element is visible
+        rootMargin: "0px",
+      }
+    );
+
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, []);
+
   return (
-    <div className="bg-white rounded-xl shadow-lg p-5 flex flex-col h-full border border-gray-100">
+    <div
+      ref={cardRef}
+      className="bg-white rounded-xl shadow-lg p-5 flex flex-col h-full border border-gray-100"
+    >
       <h3 className="text-base font-semibold text-gray-900 mb-4 text-center">
         {title}
       </h3>
       <div className="flex-1 flex items-center justify-center" style={{ minHeight: "320px" }}>
-        <ResponsiveContainer width="100%" height={320}>
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={CustomLabel}
-              outerRadius="88%"
-              innerRadius="0%"
-              fill="#8884d8"
-              dataKey="value"
-              paddingAngle={2}
-            >
+        {isVisible && (
+          <ResponsiveContainer width="100%" height={320}>
+            <PieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={CustomLabel}
+                outerRadius="88%"
+                innerRadius="0%"
+                fill="#8884d8"
+                dataKey="value"
+                paddingAngle={2}
+                animationBegin={0}
+                animationDuration={1200}
+                animationEasing="ease-out"
+              >
               {data.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
@@ -91,6 +128,7 @@ const ChartCard = ({ title, data }) => {
             />
           </PieChart>
         </ResponsiveContainer>
+        )}
       </div>
     </div>
   );

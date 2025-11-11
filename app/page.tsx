@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DashboardGridLayout } from "@/components/layout/DashboardGridLayout";
 import { UsersCard } from "@/components/cards/UsersCard";
 import { IncomeCard } from "@/components/cards/IncomeCard";
@@ -46,6 +46,39 @@ export default function DashboardPage() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [gradientColors, setGradientColors] = useState({ from: "#6A5AED", to: "#C053E4" });
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const scrollToHashTarget = () => {
+      const hash = window.location.hash;
+      if (!hash) return;
+      const target = document.querySelector(hash);
+      if (target instanceof HTMLElement) {
+        window.setTimeout(() => {
+          target.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }, 100);
+      }
+    };
+
+    const ensureTopWhenNoHash = () => {
+      if (!window.location.hash) {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        return;
+      }
+      scrollToHashTarget();
+    };
+
+    ensureTopWhenNoHash();
+
+    window.addEventListener("hashchange", ensureTopWhenNoHash);
+    return () => {
+      window.removeEventListener("hashchange", ensureTopWhenNoHash);
+    };
+  }, []);
+
   const handleRegionClick = (regionName: string, gradientFrom: string, gradientTo: string) => {
     setSelectedRegion(regionName);
     setGradientColors({ from: gradientFrom, to: gradientTo });
@@ -73,7 +106,7 @@ export default function DashboardPage() {
           <TallSalesCard data={videoViewsData} delay={7} />
 
           {/* Row 4: Regions Overview */}
-          <div className="card" data-delay="14" style={{ gridColumn: "span 6" }}>
+          <div id="regions" className="card" data-delay="14" style={{ gridColumn: "span 6" }}>
             <RegionsList onRegionClick={handleRegionClick} />
           </div>
           <div className="card" data-delay="15" style={{ gridColumn: "span 6" }}>
@@ -81,12 +114,17 @@ export default function DashboardPage() {
           </div>
 
           {/* Row 5: Course Carousel - Full Width */}
-          <div className="card card-full" data-delay="16">
+          <div id="courses" className="card card-full" data-delay="16">
             <CourseCardsCarousel courses={courses} />
           </div>
 
           {/* Row 6: Statistics Charts */}
-          <div className="card" data-delay="18" style={{ gridColumn: "span 3" }}>
+          <div
+            id="statistics"
+            className="card"
+            data-delay="18"
+            style={{ gridColumn: "span 3" }}
+          >
             <ChartCard title="Jins bo'yicha statistika" data={genderData} />
           </div>
           <div className="card" data-delay="19" style={{ gridColumn: "span 3" }}>
