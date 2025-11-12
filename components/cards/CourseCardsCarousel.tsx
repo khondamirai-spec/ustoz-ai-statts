@@ -143,6 +143,7 @@ export function CourseCardsCarousel({ courses: staticCourses }: CourseCardsCarou
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardsPerView, setCardsPerView] = useState(4);
   const [isScrolling, setIsScrolling] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [apiCourses, setApiCourses] = useState<ApiCourse[]>([]);
@@ -295,21 +296,44 @@ export function CourseCardsCarousel({ courses: staticCourses }: CourseCardsCarou
     }
   }, [canGoNext, currentIndex, cardsPerView, maxIndex, isScrolling, scrollToIndex]);
 
-  // Handle scroll events to update current index
+  // Handle scroll events to update current index and progress with smooth updates
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    const handleScroll = () => {
+    let rafId: number | null = null;
+
+    const updateScrollProgress = () => {
       const scrollLeft = container.scrollLeft;
+      const scrollWidth = container.scrollWidth - container.clientWidth;
       const cardWidth = cardWidthRef.current;
       const newIndex = Math.round(scrollLeft / cardWidth);
       setCurrentIndex(Math.max(0, Math.min(newIndex, maxIndex)));
+      
+      // Calculate scroll progress (0 to 1)
+      const progress = scrollWidth > 0 ? Math.min(Math.max(scrollLeft / scrollWidth, 0), 1) : 0;
+      setScrollProgress(progress);
+      
+      rafId = null;
     };
 
+    const handleScroll = () => {
+      if (rafId === null) {
+        rafId = requestAnimationFrame(updateScrollProgress);
+      }
+    };
+
+    // Initialize progress
+    updateScrollProgress();
+
     container.addEventListener("scroll", handleScroll, { passive: true });
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [maxIndex]);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+    };
+  }, [maxIndex, courses.length]);
 
   return (
     <div className="course-cards-wrapper">
@@ -448,23 +472,44 @@ export function CourseCardsCarousel({ courses: staticCourses }: CourseCardsCarou
         )}
       </div>
 
-      {/* Scrollbar indicator */}
-      <div className="mt-4 flex justify-center gap-1">
-        {Array.from({ length: Math.ceil(courses.length / cardsPerView) }).map(
-          (_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index * cardsPerView)}
-              className={`h-2 rounded-full transition-all ${
-                Math.floor(currentIndex / cardsPerView) === index
-                  ? "w-8 bg-slate-700"
-                  : "w-2 bg-slate-300"
-              }`}
-              aria-label={`Go to page ${index + 1}`}
+      {/* Modern Scrollbar indicator */}
+      {courses.length > 0 && (
+        <div className="course-scrollbar-indicator">
+          <div className="course-scrollbar-track">
+            <motion.div
+              className="course-scrollbar-progress"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: scrollProgress }}
+              transition={{ 
+                duration: 0.15, 
+                ease: [0.25, 0.1, 0.25, 1],
+                type: "tween"
+              }}
+              style={{ transformOrigin: "left" }}
             />
-          )
-        )}
-      </div>
+          </div>
+          <div className="course-scrollbar-dots">
+            {Array.from({ length: Math.ceil(courses.length / cardsPerView) }).map(
+              (_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    const targetIndex = index * cardsPerView;
+                    setCurrentIndex(targetIndex);
+                    scrollToIndex(targetIndex);
+                  }}
+                  className={`course-scrollbar-dot ${
+                    Math.floor(currentIndex / cardsPerView) === index
+                      ? "course-scrollbar-dot-active"
+                      : ""
+                  }`}
+                  aria-label={`Go to page ${index + 1}`}
+                />
+              )
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

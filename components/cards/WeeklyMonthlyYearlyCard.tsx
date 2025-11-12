@@ -366,36 +366,29 @@ export function WeeklyMonthlyYearlyCard({
           <p className="new-users-subtitle">New Users Registration Overview</p>
         </div>
         
-        <div className="date-filter-modern">
-          <div className="date-filter-wrapper">
-            <DatePicker
-              value={startDate}
-              onChange={(date) => {
-                setStartDate(date);
-                setStartDateStr(date.toISOString().split("T")[0]);
-              }}
-              label="From"
-              placeholder="Select start date"
-              buttonClassName="min-w-[13rem] date-picker-modern"
-              align="left"
-            />
-            <div className="date-filter-divider">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.4"/>
-              </svg>
-            </div>
-            <DatePicker
-              value={endDate}
-              onChange={(date) => {
-                setEndDate(date);
-                setEndDateStr(date.toISOString().split("T")[0]);
-              }}
-              label="To"
-              placeholder="Select end date"
-              buttonClassName="min-w-[13rem] date-picker-modern"
-              align="right"
-            />
-          </div>
+        <div className="date-filter-modern date-filter-top-right">
+          <DatePicker
+            value={startDate}
+            onChange={(date) => {
+              setStartDate(date);
+              setStartDateStr(date.toISOString().split("T")[0]);
+            }}
+            label="From"
+            placeholder="Select start date"
+            buttonClassName="date-picker-modern date-picker-top-right date-picker-from"
+            align="right"
+          />
+          <DatePicker
+            value={endDate}
+            onChange={(date) => {
+              setEndDate(date);
+              setEndDateStr(date.toISOString().split("T")[0]);
+            }}
+            label="To"
+            placeholder="Select end date"
+            buttonClassName="date-picker-modern date-picker-top-right date-picker-to"
+            align="right"
+          />
         </div>
       </div>
 

@@ -14,10 +14,10 @@ export function useDailyViews() {
     setLoading(true);
 
     try {
-      // ✅ Generate last 7 days range
+      // ✅ Generate date range for exactly 7 days (6 days back + today = 7 days)
       const end = new Date(); // today
       const start = new Date();
-      start.setDate(start.getDate() - 7);
+      start.setDate(start.getDate() - 6); // 6 days back to get exactly 7 days including today
 
       const startDate = formatDate(start);
       const endDate = formatDate(end);
@@ -34,14 +34,51 @@ export function useDailyViews() {
         throw new Error("API error");
       }
 
-      const arr = json.data; // data = [{date, count}, ...]
+      let arr = json.data; // data = [{date, count}, ...]
+
+      // ✅ Remove duplicates by date (in case API returns duplicates)
+      const uniqueDates = new Map();
+      arr.forEach((item) => {
+        const dateKey = formatDate(new Date(item.date));
+        if (!uniqueDates.has(dateKey)) {
+          uniqueDates.set(dateKey, item);
+        }
+      });
+      arr = Array.from(uniqueDates.values());
+
+      // ✅ Sort by date to ensure chronological order
+      arr.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      // ✅ Filter to only include dates within the last 7 days (including today)
+      const todayDate = new Date();
+      todayDate.setHours(23, 59, 59, 999); // End of today
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6); // 6 days back + today = 7 days
+      sevenDaysAgo.setHours(0, 0, 0, 0); // Start of that day
+      
+      arr = arr.filter((item) => {
+        const itemDate = new Date(item.date);
+        return itemDate >= sevenDaysAgo && itemDate <= todayDate;
+      });
+
+      // ✅ CRITICAL: Take only the last 7 days (as days pass, oldest day gets removed)
+      // This ensures exactly 7 days are shown, regardless of API response
+      // If somehow we still have more than 7, slice to exactly 7
+      if (arr.length > 7) {
+        arr = arr.slice(-7);
+      } else if (arr.length < 7) {
+        // If we have less than 7, that's okay - just use what we have
+        // (might happen if some days have no data)
+      }
 
       // ✅ TODAY = last item
       const lastItem = arr[arr.length - 1];
       setToday(lastItem?.count || 0);
 
       // ✅ Create chart data with weekday + date
-      const formatted = arr.map((item) => {
+      // Ensure we only process exactly 7 items
+      const itemsToProcess = arr.length > 7 ? arr.slice(-7) : arr;
+      const formatted = itemsToProcess.map((item) => {
         const d = new Date(item.date);
 
         const weekday = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][
@@ -55,7 +92,9 @@ export function useDailyViews() {
         };
       });
 
-      setChart(formatted);
+      // ✅ Final safeguard: ensure exactly 7 items
+      const finalChartData = formatted.length > 7 ? formatted.slice(-7) : formatted;
+      setChart(finalChartData);
 
     } catch (err) {
       console.log("Daily views API error:", err);
