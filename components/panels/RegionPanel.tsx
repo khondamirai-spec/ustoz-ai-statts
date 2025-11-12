@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { User } from "@/lib/types";
-import { getDistricts } from "@/lib/api";
 
 type FetchState = "idle" | "loading" | "success" | "error";
 type TabType = "tuman" | "mfy" | "maktab";
@@ -42,8 +41,6 @@ export function RegionPanel({ region, isOpen, onClose, gradientFrom, gradientTo 
   const [status, setStatus] = useState<FetchState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("tuman");
-  const [districts, setDistricts] = useState<any[]>([]);
-  const [loadingDistricts, setLoadingDistricts] = useState(true);
 
   // Lock body scroll when panel is open
   useEffect(() => {
@@ -100,30 +97,6 @@ export function RegionPanel({ region, isOpen, onClose, gradientFrom, gradientTo 
       });
 
     return () => controller.abort();
-  }, [region]);
-
-  // Fetch districts when region changes
-  useEffect(() => {
-    const load = async () => {
-      if (!region) {
-        setDistricts([]);
-        setLoadingDistricts(false);
-        return;
-      }
-
-      try {
-        setLoadingDistricts(true);
-        const data = await getDistricts(region);
-        setDistricts(data);
-      } catch (err) {
-        console.error("District load failed:", err);
-        setDistricts([]);
-      } finally {
-        setLoadingDistricts(false);
-      }
-    };
-
-    load();
   }, [region]);
 
   const regionDisplayName = region ? (friendlyNames[region] || region.replace(" viloyati", "")) : "";
@@ -241,22 +214,22 @@ export function RegionPanel({ region, isOpen, onClose, gradientFrom, gradientTo 
               </div>
             </div>
 
-            {/* Districts List */}
+            {/* User List */}
             <div className="flex-1 overflow-y-auto px-6 pb-6">
               {activeTab === "tuman" && (
                 <>
-                  {loadingDistricts && (
+                  {status === "loading" && (
                     <div className="flex flex-col items-center justify-center h-full">
                       <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
-                      <p className="text-sm text-slate-500 mt-4">Loading districts...</p>
+                      <p className="text-sm text-slate-500 mt-4">Loading users...</p>
                     </div>
                   )}
 
-                  {!loadingDistricts && districts.length > 0 && (
+                  {status === "success" && users.length > 0 && (
                     <div className="space-y-3">
-                      {districts.map((district, index) => (
+                      {users.map((user, index) => (
                         <motion.div
-                          key={`${district.region}-${index}`}
+                          key={`${user.name}-${user.joinedAt}`}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.05 }}
@@ -264,68 +237,31 @@ export function RegionPanel({ region, isOpen, onClose, gradientFrom, gradientTo 
                         >
                           <div className="flex items-center gap-3.5">
                             <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${avatarGradients[index % avatarGradients.length]} flex items-center justify-center text-white font-bold text-[18px] flex-shrink-0`}>
-                              {(district.region || "").charAt(0)}
+                              {user.name.charAt(0)}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-[16px] font-semibold text-[#222] mb-1">
-                                {district.region || ""}
+                                {user.name}
                               </p>
-                              <div className="flex items-center gap-4 text-[13px] text-[#AAA] mt-2">
-                                <div className="flex items-center gap-1">
-                                  <svg
-                                    className="w-3.5 h-3.5 text-[#CCC]"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                                    />
-                                  </svg>
-                                  <span>{district.users || 0} users</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <svg
-                                    className="w-3.5 h-3.5 text-[#CCC]"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                    />
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                    />
-                                  </svg>
-                                  <span>{district.views || 0} views</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <svg
-                                    className="w-3.5 h-3.5 text-[#CCC]"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                                    />
-                                  </svg>
-                                  <span>{district.certificates || 0} certs</span>
-                                </div>
+                              <div className="flex items-center gap-2 text-[13px] text-[#AAA]">
+                                <svg
+                                  className="w-3.5 h-3.5 text-[#CCC]"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                  />
+                                </svg>
+                                <span>Joined {dateFormatter.format(new Date(user.joinedAt))}</span>
                               </div>
+                            </div>
+                            <div className="px-3 py-1.5 bg-[#EAF4FF] text-[#4C8DFF] rounded-[14px] text-[12px] font-semibold flex-shrink-0">
+                              {user.age} yrs
                             </div>
                           </div>
                         </motion.div>
@@ -333,14 +269,19 @@ export function RegionPanel({ region, isOpen, onClose, gradientFrom, gradientTo 
                     </div>
                   )}
 
-                  {!loadingDistricts && districts.length === 0 && (
+                  {status === "success" && users.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-full text-center">
-                      <p className="text-sm text-slate-500">No districts in this region yet.</p>
+                      <p className="text-sm text-slate-500">No users in this region yet.</p>
+                    </div>
+                  )}
+
+                  {status === "error" && (
+                    <div className="flex flex-col items-center justify-center h-full text-center">
+                      <p className="text-sm text-rose-600">{error ?? "Unable to load users."}</p>
                     </div>
                   )}
                 </>
               )}
-
               {activeTab === "mfy" && (
                 <div className="flex flex-col items-center justify-center h-full text-center p-8">
                   <div className="p-4 bg-gradient-to-br from-[#EAF4FF] to-[#F0E8FF] rounded-[20px] mb-4">
@@ -391,4 +332,5 @@ export function RegionPanel({ region, isOpen, onClose, gradientFrom, gradientTo 
     </AnimatePresence>
   );
 }
+
 

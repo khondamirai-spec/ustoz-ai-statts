@@ -1,25 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { DashboardGridLayout } from "@/components/layout/DashboardGridLayout";
 import { UsersCard } from "@/components/cards/UsersCard";
 import { LessonsCard } from "@/components/cards/LessonsCard";
 import { CertificatesCard } from "@/components/cards/CertificatesCard";
-import { IncomeCard } from "@/components/cards/IncomeCard";
 import { WeeklyMonthlyYearlyCard } from "@/components/cards/WeeklyMonthlyYearlyCard";
 import { TallSalesCard } from "@/components/cards/TallSalesCard";
 import { SimpleStatCard } from "@/components/cards/SimpleStatCard";
 import { CourseCardsCarousel } from "@/components/cards/CourseCardsCarousel";
-import { RegionsList } from "@/components/cards/RegionsList";
-import { RegionStatsTable } from "@/components/cards/RegionStatsTable";
-import { RegionPanel } from "@/components/panels/RegionPanel";
-import { ApiTestCard } from "@/components/cards/ApiTestCard";
 import ChartCard from "@/components/ChartCard";
 import { genderData } from "@/data/gender";
 import { ageData } from "@/data/age";
 import { sourceData } from "@/data/source";
 import { educationData } from "@/data/education";
-import { useIncomeData } from "@/hooks/useIncomeData";
 import { useVideoViewsData } from "@/hooks/useVideoViewsData";
 
 // Course data for the carousel
@@ -43,11 +37,7 @@ const courses = [
 ];
 
 export default function DashboardPage() {
-  const incomeData = useIncomeData();
   const videoViewsData = useVideoViewsData();
-  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [gradientColors, setGradientColors] = useState({ from: "#6A5AED", to: "#C053E4" });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -82,16 +72,6 @@ export default function DashboardPage() {
     };
   }, []);
 
-  const handleRegionClick = (regionName: string, gradientFrom: string, gradientTo: string) => {
-    setSelectedRegion(regionName);
-    setGradientColors({ from: gradientFrom, to: gradientTo });
-    setIsPanelOpen(true);
-  };
-
-  const handleClosePanel = () => {
-    setIsPanelOpen(false);
-    setSelectedRegion(null);
-  };
 
   return (
     <>
@@ -101,26 +81,12 @@ export default function DashboardPage() {
           <UsersCard delay={0} />
           <LessonsCard delay={1} />
           <CertificatesCard delay={2} />
-          <IncomeCard data={incomeData} delay={3} />
 
           {/* Row 2: Large Chart Card */}
           <WeeklyMonthlyYearlyCard delay={4} />
 
           {/* Row 3: Sales Report with Gauge */}
           <TallSalesCard data={videoViewsData} delay={7} />
-
-          {/* Row 4: Regions Overview */}
-          <div id="regions" className="card" data-delay="14" style={{ gridColumn: "span 6" }}>
-            <RegionsList onRegionClick={handleRegionClick} />
-          </div>
-          <div className="card" data-delay="15" style={{ gridColumn: "span 6" }}>
-            <RegionStatsTable />
-          </div>
-
-          {/* Row 4.5: API Test Card */}
-          <div className="card" data-delay="15.5" style={{ gridColumn: "span 12" }}>
-            <ApiTestCard />
-          </div>
 
           {/* Row 5: Course Carousel - Full Width */}
           <div id="courses" className="card-full" data-delay="16" style={{ gridColumn: "span 12", padding: 0 }}>
@@ -148,15 +114,6 @@ export default function DashboardPage() {
 
         </DashboardGridLayout>
       </div>
-
-      {/* Region Panel */}
-      <RegionPanel
-        region={selectedRegion}
-        isOpen={isPanelOpen}
-        onClose={handleClosePanel}
-        gradientFrom={gradientColors.from}
-        gradientTo={gradientColors.to}
-      />
     </>
   );
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { users } from "../../../lib/fakeData";
+import { users } from "@/lib/fakeData";
 
 interface RouteContext {
   params: Promise<{

@@ -1,34 +1,135 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { CourseCard } from "./CourseCard";
 import { DatePicker } from "../shared/DatePicker";
+import { getCourses } from "@/lib/api";
 
 interface Course {
   id: number;
   title: string;
   image: string;
+  instructor?: string;
+}
+
+interface ApiCourse {
+  title: string;
+  views: number;
+  certificates: number;
+  users: number;
+  portfolios: number;
 }
 
 interface CourseCardsCarouselProps {
-  courses: Course[];
+  courses?: Course[]; // Optional for backward compatibility
 }
 
-export function CourseCardsCarousel({ courses }: CourseCardsCarouselProps) {
+// Image path helper - converts course title to image path
+const getImagePath = (title: string): string => {
+  if (!title) return "/images/default.png";
+  
+  return `/images/${title
+    .replace(/[/%]/g, "-") // Replace / and %
+    .replace(/[']/g, "_")  // Replace apostrophes
+    .replace(/\s+/g, "-")  // Replace spaces
+    .toLowerCase()}.png`;
+};
+
+// Course teacher mapping
+const courseTeachers: Record<string, string> = {
+  "Biologiya": "Kamoliddin Shamsiyev",
+  "PR/Reklama": "Malika Rasulova",
+  "Grafik dizayn kursi": "Bekzod Karimov",
+  "Mobil ilova yasash kursi": "Nodir Nizomov",
+  "Sun'iy intellektlar kursi": "Nodir Nizomov",
+  "S0 bilan Uzumdan $1000 topishning": "Nodir Nizomov",
+  "Targeting": "Diyorbek Xolmatov",
+  "Arxitektura": "Nodir Nizomov",
+  "Videomontaj": "Nodir Nizomov",
+  "Telegram Ads kursi": "Nodir Nizomov",
+  "Mobilografiya": "Jasur Rahimov",
+  "default": "Nodir Nizomov"
+};
+
+// Fallback function for courses not in mapping
+const getFallbackImage = (index: number): string => {
+  const imageIndex = (index % 16) + 1;
+  return `/images/mobile-afix-thumbnail_${imageIndex}.png`;
+};
+
+export function CourseCardsCarousel({ courses: staticCourses }: CourseCardsCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardsPerView, setCardsPerView] = useState(4);
   const [isScrolling, setIsScrolling] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [apiCourses, setApiCourses] = useState<ApiCourse[]>([]);
+  const [loading, setLoading] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardWidthRef = useRef(220 + 24); // card width + gap
 
   // Set dates on client side only to avoid hydration mismatch
   useEffect(() => {
-    setStartDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
-    setEndDate(new Date());
+    const defaultStartDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const defaultEndDate = new Date();
+    setStartDate(defaultStartDate);
+    setEndDate(defaultEndDate);
   }, []);
+
+  // Fetch courses from API when dates change
+  useEffect(() => {
+    if (!startDate || !endDate) return;
+
+    const loadCourses = async () => {
+      setLoading(true);
+      try {
+        // Format dates as YYYY-MM-DD
+        const formatDate = (date: Date) => {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          return `${year}-${month}-${day}`;
+        };
+
+        const startDateStr = formatDate(startDate);
+        const endDateStr = formatDate(endDate);
+
+        const data = await getCourses(startDateStr, endDateStr);
+        
+        // Sort by users descending
+        const sorted = [...data].sort((a, b) => b.users - a.users);
+        setApiCourses(sorted);
+      } catch (error) {
+        console.error("Error loading courses:", error);
+        setApiCourses([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCourses();
+  }, [startDate, endDate]);
+
+  // Merge API courses with teacher + image info
+  // (Already sorted by users descending in useEffect)
+  const courses = useMemo(() => {
+    if (apiCourses.length > 0) {
+      // Merge with teacher + image info
+      return apiCourses.map((course, index) => ({
+        id: index + 1,
+        title: course.title,
+        image: getImagePath(course.title) || getFallbackImage(index),
+        instructor: courseTeachers[course.title] || courseTeachers["default"],
+        users: course.users,
+        views: course.views,
+        certificates: course.certificates,
+        portfolio: course.portfolios,
+      }));
+    }
+    // Fallback to static courses if no API data
+    return staticCourses || [];
+  }, [apiCourses, staticCourses]);
 
   // Calculate cards per view based on screen size
   useEffect(() => {
@@ -204,30 +305,45 @@ export function CourseCardsCarousel({ courses }: CourseCardsCarouselProps) {
 
       {/* Carousel Container */}
       <div className="course-cards-scroll-wrapper">
-        <div
-          ref={scrollContainerRef}
-          className="course-cards-container"
-          style={{
-            WebkitOverflowScrolling: "touch",
-          }}
-        >
-          {courses.map((course, index) => (
-            <motion.div
-              key={course.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-            >
-              <CourseCard
-                id={course.id}
-                image={course.image}
-                title={course.title}
-                delay={index}
-                animate={true}
-              />
-            </motion.div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <p className="text-gray-400 text-sm">Loading courses...</p>
+          </div>
+        ) : courses.length === 0 ? (
+          <div className="flex items-center justify-center py-20">
+            <p className="text-gray-400 text-sm">No courses found</p>
+          </div>
+        ) : (
+          <div
+            ref={scrollContainerRef}
+            className="course-cards-container"
+            style={{
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
+            {courses.map((course, index) => (
+              <motion.div
+                key={course.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+              >
+                <CourseCard
+                  id={course.id}
+                  image={course.image}
+                  title={course.title}
+                  instructorName={course.instructor}
+                  users={course.users}
+                  views={course.views}
+                  certificates={course.certificates}
+                  portfolio={course.portfolio}
+                  delay={index}
+                  animate={true}
+                />
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Scrollbar indicator */}
