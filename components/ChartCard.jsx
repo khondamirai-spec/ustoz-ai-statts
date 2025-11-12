@@ -82,14 +82,9 @@ const ChartCard = ({ title, data }) => {
   }, []);
 
   return (
-    <div
-      ref={cardRef}
-      className="bg-white rounded-xl shadow-lg p-5 flex flex-col h-full border border-gray-100"
-    >
-      <h3 className="text-base font-semibold text-gray-900 mb-4 text-center">
-        {title}
-      </h3>
-      <div className="flex-1 flex items-center justify-center" style={{ minHeight: "320px" }}>
+    <div ref={cardRef} className="chart-card">
+      <h3 className="chart-card-title">{title}</h3>
+      <div className="chart-card-body">
         {isVisible && (
           <ResponsiveContainer width="100%" height={320}>
             <PieChart>

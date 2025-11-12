@@ -102,6 +102,10 @@ export default function DashboardPage() {
           {/* Row 3: Sales Report with Gauge */}
           <TallSalesCard data={videoViewsData} delay={7} />
 
+          {/* Row 4: Highlight Stats */}
+          <SimpleStatCard title="Faol o'quvchilar" value={12840} change={12.4} delay={8} gridSpan={6} showMetrics={false} />
+          <SimpleStatCard title="Yangi ro'yxatdan o'tganlar" value={842} change={6.1} delay={9} gridSpan={6} showMetrics={false} />
+
           {/* Row 5: Course Carousel - Full Width */}
           <div id="courses" className="card-full" data-delay="16" style={{ gridColumn: "span 12", padding: 0 }}>
             <CourseCardsCarousel courses={courses} />

@@ -1,5 +1,6 @@
 "use client";
 
+import { CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
 
@@ -9,6 +10,9 @@ interface SimpleStatCardProps {
   change: number;
   animate?: boolean;
   delay?: number;
+  gridSpan?: number;
+  style?: CSSProperties;
+  showMetrics?: boolean;
 }
 
 const SimpleStatIcon = () => (
@@ -52,6 +56,9 @@ export function SimpleStatCard({
   change,
   animate = true,
   delay = 0,
+  gridSpan = 4,
+  style,
+  showMetrics = true,
 }: SimpleStatCardProps) {
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -66,17 +73,20 @@ export function SimpleStatCard({
     },
   };
 
-  const hoverVariants = animate ? {
-    hover: {
-      y: -6,
-      scale: 1.02,
-      transition: { duration: 0.22 },
-    },
-  } : undefined;
+  const hoverVariants = animate
+    ? {
+        hover: {
+          y: -6,
+          scale: 1.02,
+          transition: { duration: 0.22 },
+        },
+      }
+    : undefined;
 
   return (
     <motion.div
       className="card card-bottom"
+      style={{ gridColumn: `span ${gridSpan}`, ...(style ?? {}) }}
       variants={animate ? { ...cardVariants, ...(hoverVariants || {}) } : undefined}
       initial={animate ? "hidden" : undefined}
       animate={animate ? "visible" : undefined}
@@ -88,19 +98,23 @@ export function SimpleStatCard({
         </div>
         <SimpleStatIcon />
       </header>
-      <div className="card-metric">
-        <h2>
-          <AnimatedNumber value={value} />
-        </h2>
-        <motion.small
-          initial={animate ? { opacity: 0, x: 16 } : undefined}
-          animate={animate ? { opacity: 1, x: 0 } : undefined}
-          transition={{ duration: 0.52, delay: delay * 0.08 + 0.12 }}
-        >
-          {change >= 0 ? '+' : ''}{change}%
-        </motion.small>
-      </div>
+      {showMetrics ? (
+        <div className="card-metric">
+          <h2>
+            <AnimatedNumber value={value} />
+          </h2>
+          <motion.small
+            initial={animate ? { opacity: 0, x: 16 } : undefined}
+            animate={animate ? { opacity: 1, x: 0 } : undefined}
+            transition={{ duration: 0.52, delay: delay * 0.08 + 0.12 }}
+          >
+            {change >= 0 ? "+" : ""}
+            {change}%
+          </motion.small>
+        </div>
+      ) : (
+        <div className="card-body-placeholder" />
+      )}
     </motion.div>
   );
 }
-

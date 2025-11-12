@@ -15,13 +15,15 @@ export function useMainStats() {
       setData({
         users: 3500,
         lessons: 20000,
-        certificates: 156
+        certificates: 156,
+        courseViews: 0
       });
     } else {
       setData({
         users: result.users,
         lessons: result.lessons,
-        certificates: result.certificates
+        certificates: result.certificates,
+        courseViews: result.courseViews || result.views || result.course_views || 0
       });
     }
 
@@ -34,6 +36,7 @@ export function useMainStats() {
 
   return { data, loading };
 }
+
 
 
 

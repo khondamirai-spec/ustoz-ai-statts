@@ -9,6 +9,7 @@ export function useDailyViews() {
   const [today, setToday] = useState(0);
   const [chart, setChart] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [percentageChange, setPercentageChange] = useState(0);
 
   async function load() {
     setLoading(true);
@@ -75,6 +76,22 @@ export function useDailyViews() {
       const lastItem = arr[arr.length - 1];
       setToday(lastItem?.count || 0);
 
+      // ✅ Calculate percentage change: yesterday vs day before yesterday
+      // Yesterday = second to last item, Day before yesterday = third to last item
+      if (arr.length >= 3) {
+        const yesterday = arr[arr.length - 2]?.count || 0;
+        const dayBeforeYesterday = arr[arr.length - 3]?.count || 0;
+        
+        if (dayBeforeYesterday > 0) {
+          const change = ((yesterday - dayBeforeYesterday) / dayBeforeYesterday) * 100;
+          setPercentageChange(Number(change.toFixed(1)));
+        } else {
+          setPercentageChange(0);
+        }
+      } else {
+        setPercentageChange(0);
+      }
+
       // ✅ Create chart data with weekday + date
       // Ensure we only process exactly 7 items
       const itemsToProcess = arr.length > 7 ? arr.slice(-7) : arr;
@@ -110,6 +127,10 @@ export function useDailyViews() {
         { day: "MON", date: 10, value: 130 },
         { day: "TUE", date: 11, value: 110 }
       ]);
+      // Calculate percentage change from fallback data
+      // Yesterday (MON) = 130, Day before yesterday (SUN) = 115
+      const change = ((130 - 115) / 115) * 100;
+      setPercentageChange(Number(change.toFixed(1)));
     }
 
     setLoading(false);
@@ -119,7 +140,7 @@ export function useDailyViews() {
     load();
   }, []);
 
-  return { today, chart, loading };
+  return { today, chart, loading, percentageChange };
 }
 
 

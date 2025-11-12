@@ -5,6 +5,7 @@ import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
 import { MiniBarChart } from "@/components/charts/MiniBarChart";
 import type { VideoViewsData } from "@/hooks/useVideoViewsData";
 import { useDailyViews } from "@/hooks/useDailyViews";
+import { useMainStats } from "@/hooks/useMainStats";
 
 const TallSalesIcon = () => (
   <motion.svg
@@ -54,12 +55,13 @@ export function TallSalesCard({
   animate = true, 
   delay = 0 
 }: TallSalesCardProps) {
-  const { today, chart, loading } = useDailyViews();
+  const { today, chart, loading, percentageChange } = useDailyViews();
+  const { data: mainStats, loading: mainStatsLoading } = useMainStats();
   
   const safeData = {
     value: data?.value ?? 0,
-    change: data?.change ?? 0,
-    avgScore: data?.avgScore ?? 0,
+    change: percentageChange,
+    avgScore: mainStats?.courseViews ?? 0,
     monthly: data?.monthly ?? 0,
     yearly: data?.yearly ?? 0,
   };
@@ -115,6 +117,11 @@ export function TallSalesCard({
           initial={animate ? { opacity: 0, x: 16 } : undefined}
           animate={animate ? { opacity: 1, x: 0 } : undefined}
             transition={{ duration: 0.52, delay: delay * 0.08 + 0.12 }}
+            style={safeData.change < 0 ? {
+              color: '#ef4444',
+              background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(239, 68, 68, 0.08))',
+              boxShadow: '0 8px 16px rgba(239, 68, 68, 0.15)'
+            } : undefined}
           >
             {safeData.change > 0 ? '+' : ''}{safeData.change}%
           </motion.small>
@@ -124,7 +131,13 @@ export function TallSalesCard({
       <div className="card-total-label">
         <div className="stat-main">
           <span className="stat-label">JAMI KO'RGANALAR</span>
-          <strong className="stat-value">{safeData.avgScore.toLocaleString()}</strong>
+          <strong className="stat-value">
+            {mainStatsLoading ? (
+              <span>Loading...</span>
+            ) : (
+              (mainStats?.courseViews || 0).toLocaleString()
+            )}
+          </strong>
         </div>
         <svg className="stat-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="rgba(46, 212, 122, 0.2)" stroke="rgba(46, 212, 122, 0.4)" strokeWidth="1.5"/>

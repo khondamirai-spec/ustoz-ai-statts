@@ -11,12 +11,12 @@ import {
 } from "react";
 import type { MouseEvent } from "react";
 import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
-import { DatePicker } from "@/components/shared/DatePicker";
 import { useDailyUsers } from "@/hooks/useDailyUsers";
 
 interface ChartPoint {
   x: number;
   y: number;
+  dataIndex: number;
 }
 
 const formatCoordinate = (value: number) =>
@@ -213,6 +213,9 @@ export function WeeklyMonthlyYearlyCard({
   const chartHeight = 200;
   const chartEffectiveHeight = 160;
   const chartTop = chartHeight - chartEffectiveHeight;
+  const normalizedMaxUsers = hasData
+    ? Math.max(100, Math.ceil(maxUsers / 100) * 100)
+    : 100;
   const horizontalPositions = (index: number) => {
     if (data.chartData.length <= 1) {
       return chartWidth / 2;
@@ -220,10 +223,10 @@ export function WeeklyMonthlyYearlyCard({
     return (index / (data.chartData.length - 1)) * chartWidth;
   };
   const verticalPosition = (users: number) => {
-    if (maxUsers === 0) {
+    if (normalizedMaxUsers === 0) {
       return chartHeight;
     }
-    return chartHeight - (users / maxUsers) * chartEffectiveHeight;
+    return chartHeight - (users / normalizedMaxUsers) * chartEffectiveHeight;
   };
 
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -233,11 +236,14 @@ export function WeeklyMonthlyYearlyCard({
     const mapped = data.chartData.map((d, i) => {
       const x = horizontalPositions(i);
       const y = verticalPosition(d.users);
-      return { x, y };
+      if (!isFinite(x) || !isFinite(y) || isNaN(x) || isNaN(y)) {
+        return null;
+      }
+      return { x, y, dataIndex: i };
     });
-    // Ensure all points are valid and in order - this guarantees continuity
-    return mapped.filter((p) => !isNaN(p.x) && !isNaN(p.y) && isFinite(p.x) && isFinite(p.y));
-  }, [data.chartData, maxUsers, data.chartData.length]);
+
+    return mapped.filter((point): point is ChartPoint => point !== null);
+  }, [data.chartData, maxUsers]);
 
   const linePath = useMemo(
     () => (points.length ? buildSmoothLinePath(points) : ""),
@@ -249,55 +255,64 @@ export function WeeklyMonthlyYearlyCard({
     [points, chartHeight]
   );
 
-  const gridLineCount = 5;
-  const gridLines = useMemo(
-    () =>
-      Array.from({ length: gridLineCount }, (_, i) =>
-        chartTop + ((chartHeight - chartTop) * i) / (gridLineCount - 1)
-      ),
-    [chartHeight, chartTop, gridLineCount]
-  );
+  const yAxisTicks = useMemo(() => {
+    const segments = 4;
+    return Array.from({ length: segments + 1 }, (_, index) => {
+      const ratio = index / segments;
+      const value = Math.round(normalizedMaxUsers * (1 - ratio));
+      const y = chartTop + ratio * chartEffectiveHeight;
+      return { value, y };
+    });
+  }, [chartEffectiveHeight, chartTop, normalizedMaxUsers]);
 
   const xAxisLabels = useMemo(() => {
-    if (!hasData) {
-      return [] as { x: number; label: string }[];
+    if (!hasData || points.length === 0) {
+      return [] as { label: string; x: number; percent: number }[];
     }
 
-    const labelSlots = Math.min(6, data.chartData.length);
+    const labelSlots = Math.min(8, data.chartData.length);
 
     if (labelSlots === 1) {
+      const point = points[0];
+      const label =
+        data.chartData[0]?.axisLabel ?? data.chartData[0]?.date ?? "";
       return [
         {
-          x: chartWidth / 2,
-          label:
-            data.chartData[0]?.axisLabel ?? data.chartData[0]?.date ?? "",
+          label,
+          x: point?.x ?? chartWidth / 2,
+          percent: (point?.x ?? chartWidth / 2) / chartWidth,
         },
       ];
     }
 
-    const step = (data.chartData.length - 1) / (labelSlots - 1);
+    const denominator = Math.max(labelSlots - 1, 1);
+    const step = (data.chartData.length - 1) / denominator;
 
     return Array.from({ length: labelSlots }, (_, slot) => {
       const dataIndex = Math.round(slot * step);
-      const point = points[dataIndex];
-
+      const point = points.find((pt) => pt.dataIndex === dataIndex);
+      const label =
+        data.chartData[dataIndex]?.axisLabel ??
+        data.chartData[dataIndex]?.date ??
+        "";
+      const x = point?.x ?? (slot / denominator) * chartWidth;
       return {
-        x: point?.x ?? 0,
-        label:
-          data.chartData[dataIndex]?.axisLabel ??
-          data.chartData[dataIndex]?.date ??
-          "",
+        label,
+        x,
+        percent: x / chartWidth,
       };
     });
   }, [chartWidth, data.chartData, hasData, points]);
 
-  const verticalHighlightX = useMemo(() => {
-    if (!hasData) return [];
-    const step = Math.max(1, Math.floor(data.chartData.length / 6));
-    return points
-      .map((point, index) => (index % step === 0 ? point.x : null))
-      .filter((value): value is number => value !== null);
-  }, [points, hasData, data.chartData.length]);
+  const horizontalGridLines = useMemo(
+    () => yAxisTicks.map((tick) => tick.y),
+    [yAxisTicks]
+  );
+
+  const verticalGridLines = useMemo(
+    () => xAxisLabels.map((axis) => axis.x),
+    [xAxisLabels]
+  );
 
   const rawGradientId = useId();
   const baseGradientId = useMemo(
@@ -306,7 +321,6 @@ export function WeeklyMonthlyYearlyCard({
   );
   const lineGradientId = `${baseGradientId}-line`;
   const areaGradientId = `${baseGradientId}-area`;
-
   const handleMouseMove = useCallback(
     (event: MouseEvent<SVGSVGElement>) => {
       if (!svgRef.current || points.length === 0) {
@@ -342,13 +356,14 @@ export function WeeklyMonthlyYearlyCard({
 
   const hoveredPoint =
     hoveredIndex !== null ? points[hoveredIndex] : null;
-  const hoveredData =
-    hoveredIndex !== null ? data.chartData[hoveredIndex] : null;
+  const hoveredData = hoveredPoint
+    ? data.chartData[hoveredPoint.dataIndex]
+    : null;
 
   const tooltipStyle = hoveredPoint
     ? {
         left: `${(hoveredPoint.x / chartWidth) * 100}%`,
-        top: `${((hoveredPoint.y / chartHeight) * 200 + 16)}px`, // Account for padding-top
+        top: `${(hoveredPoint.y / chartHeight) * 100}%`,
       }
     : undefined;
 
@@ -366,29 +381,33 @@ export function WeeklyMonthlyYearlyCard({
           <p className="new-users-subtitle">New Users Registration Overview</p>
         </div>
         
-        <div className="date-filter-modern date-filter-top-right">
-          <DatePicker
-            value={startDate}
-            onChange={(date) => {
-              setStartDate(date);
-              setStartDateStr(date.toISOString().split("T")[0]);
-            }}
-            label="From"
-            placeholder="Select start date"
-            buttonClassName="date-picker-modern date-picker-top-right date-picker-from"
-            align="right"
-          />
-          <DatePicker
-            value={endDate}
-            onChange={(date) => {
-              setEndDate(date);
-              setEndDateStr(date.toISOString().split("T")[0]);
-            }}
-            label="To"
-            placeholder="Select end date"
-            buttonClassName="date-picker-modern date-picker-top-right date-picker-to"
-            align="right"
-          />
+        {/* Clean Date Filter */}
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <input
+              type="date"
+              value={startDateStr}
+              onChange={(e) => {
+                const date = e.target.value ? new Date(e.target.value) : undefined;
+                setStartDate(date);
+                setStartDateStr(e.target.value);
+              }}
+              className="px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-400 transition-all cursor-pointer"
+            />
+          </div>
+          <span className="text-slate-400 font-semibold text-lg">—</span>
+          <div className="relative">
+            <input
+              type="date"
+              value={endDateStr}
+              onChange={(e) => {
+                const date = e.target.value ? new Date(e.target.value) : undefined;
+                setEndDate(date);
+                setEndDateStr(e.target.value);
+              }}
+              className="px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-400 transition-all cursor-pointer"
+            />
+          </div>
         </div>
       </div>
 
@@ -424,123 +443,122 @@ export function WeeklyMonthlyYearlyCard({
         </div>
       )}
 
-      {/* Area Chart */}
-      <div className="new-users-chart">
-        <svg
-          width="100%"
-          height="200"
-          viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-          preserveAspectRatio="none"
-          className="area-chart"
-          ref={svgRef}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-        >
-          <defs>
-            <linearGradient id={areaGradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="rgba(45, 213, 197, 0.48)" />
-              <stop offset="50%" stopColor="rgba(45, 213, 197, 0.28)" />
-              <stop offset="85%" stopColor="rgba(45, 213, 197, 0.12)" />
-              <stop offset="100%" stopColor="rgba(45, 213, 197, 0.02)" />
-            </linearGradient>
-            <linearGradient id={lineGradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#13c5ce" />
-              <stop offset="50%" stopColor="#12b3e6" />
-              <stop offset="100%" stopColor="#0ea5e9" />
-            </linearGradient>
-          </defs>
-
-          {/* Grid */}
-          {gridLines.map((y, index) => (
-            <line
-              key={`grid-horizontal-${index}`}
-              x1="0"
-              y1={formatCoordinate(y)}
-              x2={formatCoordinate(chartWidth)}
-              y2={formatCoordinate(y)}
-              className="chart-grid-line"
-            />
-          ))}
-          {verticalHighlightX.map((x, index) => (
-            <line
-              key={`grid-vertical-${index}`}
-              x1={formatCoordinate(x)}
-              y1={formatCoordinate(chartTop)}
-              x2={formatCoordinate(x)}
-              y2={formatCoordinate(chartHeight)}
-              className="chart-grid-line chart-grid-line-vertical"
-            />
-          ))}
-          
-          {/* Generate area path */}
-          <path
-            d={areaPath}
-            fill={`url(#${areaGradientId})`}
-            className="chart-area"
-          />
-          
-          {/* Generate line path */}
-          {linePath && (
-            <path
-              d={linePath}
-              fill="none"
-              stroke={`url(#${lineGradientId})`}
-              strokeWidth="1"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeMiterlimit="10"
-              className="chart-line"
-            />
-          )}
-
-          {hoveredPoint && (
-            <>
-              <line
-                x1={formatCoordinate(hoveredPoint.x)}
-                y1={formatCoordinate(chartTop)}
-                x2={formatCoordinate(hoveredPoint.x)}
-                y2={formatCoordinate(chartHeight)}
-                className="chart-hover-line"
-              />
-              <circle
-                cx={formatCoordinate(hoveredPoint.x)}
-                cy={formatCoordinate(hoveredPoint.y)}
-                r="4"
-                fill="#0ea5e9"
-                stroke="#fff"
-                strokeWidth="1.6"
-              />
-            </>
-          )}
-        </svg>
-
-        {xAxisLabels.length > 0 && (
-          <div className="chart-x-axis">
-            {xAxisLabels.map((axis, index) => (
-              <div
-                key={`axis-label-${index}-${axis.label}`}
-                className="chart-x-tick"
-                style={{
-                  left: `${(axis.x / chartWidth) * 100}%`,
-                }}
-              >
-                <span className="chart-x-tick-dot" />
-                <span className="chart-x-label">{axis.label}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {hoveredPoint && hoveredData && (
-          <div className="chart-tooltip" style={tooltipStyle}>
-            <span className="chart-tooltip-value">
-              {hoveredData.users.toLocaleString()}
+      <div className="lesson-activity-chart">
+        <div className="lesson-axis lesson-axis--y">
+          {yAxisTicks.map((tick, index) => (
+            <span key={`y-axis-${index}-${tick.value}`}>
+              {tick.value.toLocaleString()}
             </span>
-            <span className="chart-tooltip-date">{hoveredData.date}</span>
-          </div>
-        )}
+          ))}
+        </div>
+
+        <div className="lesson-chart-wrapper">
+          <svg
+            ref={svgRef}
+            className="lesson-chart-svg"
+            role="img"
+            viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+            preserveAspectRatio="none"
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+          >
+            <defs>
+              <linearGradient id={areaGradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="rgba(34, 211, 238, 0.45)" />
+                <stop offset="70%" stopColor="rgba(34, 211, 238, 0.12)" />
+                <stop offset="100%" stopColor="rgba(255, 255, 255, 0)" />
+              </linearGradient>
+              <linearGradient id={lineGradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#22d3ee" />
+                <stop offset="100%" stopColor="#0ea5e9" />
+              </linearGradient>
+            </defs>
+
+            {horizontalGridLines.map((y, index) => (
+              <line
+                key={`grid-horizontal-${index}`}
+                x1="0"
+                x2={formatCoordinate(chartWidth)}
+                y1={formatCoordinate(y)}
+                y2={formatCoordinate(y)}
+                className="lesson-grid-line"
+              />
+            ))}
+
+            {verticalGridLines.map((x, index) => (
+              <line
+                key={`grid-vertical-${index}`}
+                x1={formatCoordinate(x)}
+                x2={formatCoordinate(x)}
+                y1={formatCoordinate(chartTop)}
+                y2={formatCoordinate(chartHeight)}
+                className="lesson-grid-line lesson-grid-line--vertical"
+              />
+            ))}
+
+            {areaPath && (
+              <path
+                d={areaPath}
+                fill={`url(#${areaGradientId})`}
+                className="lesson-area"
+              />
+            )}
+
+            {linePath && (
+              <path
+                d={linePath}
+                fill="none"
+                stroke={`url(#${lineGradientId})`}
+                className="lesson-line"
+              />
+            )}
+
+            {hoveredPoint && (
+              <>
+                <line
+                  x1={formatCoordinate(hoveredPoint.x)}
+                  x2={formatCoordinate(hoveredPoint.x)}
+                  y1={formatCoordinate(chartTop)}
+                  y2={formatCoordinate(chartHeight)}
+                  className="lesson-hover-line"
+                />
+                <circle
+                  cx={formatCoordinate(hoveredPoint.x)}
+                  cy={formatCoordinate(hoveredPoint.y)}
+                  r="2.4"
+                  className="lesson-hover-dot"
+                />
+              </>
+            )}
+          </svg>
+
+          {hoveredPoint && hoveredData && (
+            <div className="lesson-tooltip" style={tooltipStyle}>
+              <span className="lesson-tooltip__value">
+                {hoveredData.users.toLocaleString()}
+              </span>
+              <span className="lesson-tooltip__date">{hoveredData.date}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="lesson-axis lesson-axis--x">
+          {xAxisLabels.map((axis, index) => (
+            <span
+              key={`${axis.label}-${index}`}
+              className="lesson-axis__label"
+              style={{ left: `${axis.percent * 100}%` }}
+            >
+              {axis.label}
+            </span>
+          ))}
+        </div>
+
+        <div className="lesson-legend">
+          <span className="lesson-legend__dot" />
+          Lessons
+        </div>
       </div>
     </motion.div>
   );
 }
-

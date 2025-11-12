@@ -68,45 +68,54 @@ p {
 }
 
 .card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(241, 245, 249, 0.95));
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.88), rgba(241, 245, 249, 0.72));
   border-radius: var(--card-radius);
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  border: 1px solid rgba(148, 163, 184, 0.22);
   box-shadow:
-    0 20px 45px rgba(15, 23, 42, 0.08),
-    0 0 0 1px rgba(255, 255, 255, 0.4) inset;
+    0 18px 48px -22px rgba(15, 23, 42, 0.55),
+    0 12px 30px -12px rgba(14, 116, 144, 0.28);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   position: relative;
   overflow: hidden;
+  isolation: isolate;
+  backdrop-filter: blur(18px) saturate(1.25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
   animation: cardEnter 480ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
   transition:
-    transform 220ms ease,
-    box-shadow 220ms ease,
-    border-color 220ms ease;
-  backdrop-filter: blur(6px);
+    transform 260ms ease,
+    box-shadow 260ms ease,
+    border-color 260ms ease,
+    background 260ms ease;
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at top left, rgba(45, 140, 255, 0.14), transparent 45%);
-  opacity: 0.9;
-  pointer-events: none;
-  border-radius: inherit;
-}
-
+.card::before,
 .card::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at bottom right, rgba(46, 212, 122, 0.18), transparent 55%);
-  mix-blend-mode: screen;
-  opacity: 0.6;
   pointer-events: none;
   border-radius: inherit;
+  opacity: 0.85;
+  transition: opacity 260ms ease, transform 320ms ease;
+}
+
+.card::before {
+  background: radial-gradient(circle at 0% -10%, rgba(59, 130, 246, 0.35), transparent 58%);
+  transform: translate(-12%, -18%) rotate(-6deg);
+  mix-blend-mode: screen;
+}
+
+.card::after {
+  background: radial-gradient(circle at 110% 120%, rgba(45, 212, 191, 0.28), transparent 52%);
+  transform: translate(10%, 12%) scale(0.96);
+  mix-blend-mode: soft-light;
 }
 
 .card > * {
@@ -115,11 +124,50 @@ p {
 }
 
 .card:hover {
-  transform: translateY(-8px) scale(1.01);
+  transform: translateY(-10px) scale(1.01) translateZ(0);
   box-shadow:
-    0 26px 60px rgba(15, 23, 42, 0.12),
-    0 0 0 1px rgba(148, 163, 184, 0.18) inset;
-  border-color: rgba(148, 163, 184, 0.28);
+    0 28px 60px -26px rgba(15, 23, 42, 0.65),
+    0 12px 38px -16px rgba(56, 189, 248, 0.3);
+  border-color: rgba(94, 234, 212, 0.45);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.94), rgba(240, 249, 255, 0.78));
+}
+
+.card:hover::before {
+  opacity: 1;
+  transform: translate(-6%, -22%) rotate(-2deg) scale(1.08);
+}
+
+.card:hover::after {
+  opacity: 0.95;
+  transform: translate(6%, 8%) scale(1.02);
+}
+
+.chart-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100%;
+  background: transparent;
+  padding: 0.5rem 0.25rem 1.25rem;
+}
+
+.chart-card-title {
+  font-size: 1.08rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgba(15, 23, 42, 0.92);
+  text-align: center;
+  margin: 0;
+  font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.chart-card-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  padding: 0 0.5rem;
 }
 
 .card[data-delay="1"] {
@@ -236,6 +284,10 @@ p {
   padding: 0.3rem 0.75rem;
   animation: slideInRight 520ms 120ms ease-out both;
   box-shadow: 0 8px 16px rgba(46, 212, 122, 0.15);
+}
+
+.card-body-placeholder {
+  min-height: 1.5rem;
 }
 
 .card-subtitle {
@@ -1103,6 +1155,11 @@ p {
   position: relative;
 }
 
+.new-users-card::before,
+.new-users-card::after {
+  content: none;
+}
+
 .new-users-header {
   display: flex;
   justify-content: space-between;
@@ -1631,127 +1688,366 @@ p {
   font-weight: 600;
 }
 
-.new-users-chart {
+.daily-users-diagram {
   position: relative;
-  margin-top: 0.5rem;
-  padding-top: 1rem;
-  padding-bottom: 2.75rem;
+  margin-top: 0.75rem;
   width: 100%;
-  min-height: 200px;
+  min-height: 240px;
+  padding: 1.35rem 1.25rem 3.5rem;
+  border-radius: 28px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background:
+    radial-gradient(circle at 20% 15%, rgba(59, 130, 246, 0.18), transparent 55%),
+    radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.25), transparent 60%),
+    rgba(249, 250, 251, 0.65);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1px 0 rgba(148, 163, 184, 0.15);
   overflow: hidden;
+  isolation: isolate;
 }
 
-.area-chart {
-  display: block;
-  width: 100%;
-  height: 200px;
-  overflow: visible;
-  max-width: 100%;
-}
-
-.chart-area {
-  animation: fadeIn 800ms ease forwards;
-}
-
-.chart-line {
-  animation: drawPath 1200ms ease forwards;
-  stroke-dasharray: 2000;
-  stroke-dashoffset: 2000;
-  filter: drop-shadow(0 1px 4px rgba(14, 165, 233, 0.12));
-}
-
-.chart-grid-line {
-  stroke: rgba(15, 23, 42, 0.08);
-  stroke-width: 0.5;
-}
-
-.chart-grid-line-vertical {
-  stroke-width: 0.35;
-  stroke-dasharray: 3 6;
-}
-
-.chart-hover-line {
-  stroke: rgba(14, 165, 233, 0.4);
-  stroke-width: 1;
-  stroke-dasharray: 3 4;
-  animation: fadeIn 240ms ease forwards;
-}
-
-.chart-dot {
-  animation: dotPop 400ms ease backwards;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.chart-dot:hover {
-  r: 6.5;
-  filter: drop-shadow(0 3px 8px rgba(19, 197, 206, 0.45));
-}
-
-.chart-tooltip {
+.daily-users-diagram__mesh {
   position: absolute;
-  padding: 0.55rem 0.85rem;
-  border-radius: 12px;
-  background: rgba(6, 182, 212, 0.9);
-  color: #fff;
-  font-size: 0.8rem;
-  font-weight: 600;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(148, 163, 184, 0.13),
+      rgba(148, 163, 184, 0.13) 1px,
+      transparent 1px,
+      transparent 26px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(148, 163, 184, 0.1),
+      rgba(148, 163, 184, 0.1) 1px,
+      transparent 1px,
+      transparent 32px
+    );
+  opacity: 0.4;
   pointer-events: none;
-  transform: translate(-50%, -130%);
-  box-shadow: 0 18px 36px rgba(6, 182, 212, 0.25);
-  backdrop-filter: blur(4px);
-  white-space: nowrap;
+  z-index: 0;
+}
+
+.daily-users-diagram__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
   z-index: 1;
 }
 
-.chart-tooltip-value {
+.daily-users-diagram__area {
+  filter: blur(22px);
+  opacity: 0.7;
+  animation: fadeIn 600ms ease forwards;
+}
+
+.daily-users-diagram__path-glow {
+  stroke-width: 4;
+  opacity: 0.55;
+}
+
+.daily-users-diagram__path {
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: drawPath 1200ms ease forwards;
+  stroke-dasharray: 320;
+  stroke-dashoffset: 320;
+}
+
+.daily-users-diagram__nodes {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.diagram-node {
+  position: absolute;
+  width: clamp(18px, 2.8vw, 26px);
+  height: clamp(18px, 2.8vw, 26px);
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: transform 180ms ease, filter 180ms ease, opacity 200ms ease;
+  isolation: isolate;
+}
+
+.diagram-node:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+}
+
+.diagram-node__pulse,
+.diagram-node__core {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.diagram-node__pulse {
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.5), transparent 65%);
+  filter: blur(2px);
+  opacity: 0.6;
+  animation: glowPulse 2.4s ease-in-out infinite;
+}
+
+.diagram-node__core {
+  inset: 22%;
+  background: linear-gradient(135deg, #22d3ee, #6366f1);
+  border-radius: inherit;
+  box-shadow: 0 5px 15px rgba(100, 116, 139, 0.25);
+}
+
+.diagram-node.is-active {
+  transform: translate(-50%, -50%) scale(1.2);
+  filter: drop-shadow(0 10px 25px rgba(14, 116, 144, 0.35));
+}
+
+.diagram-tooltip {
+  position: absolute;
+  padding: 0.55rem 0.85rem;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 14px));
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+  white-space: nowrap;
+  z-index: 3;
+}
+
+.diagram-tooltip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  border-width: 6px 6px 0 6px;
+  border-style: solid;
+  border-color: rgba(15, 23, 42, 0.92) transparent transparent transparent;
+}
+
+.diagram-tooltip__value {
   display: block;
-  font-size: 0.95rem;
+  font-size: 1rem;
   letter-spacing: 0.01em;
 }
 
-.chart-tooltip-date {
+.diagram-tooltip__date {
   display: block;
-  margin-top: 0.15rem;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
   opacity: 0.75;
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
   text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
-.chart-x-axis {
+.daily-users-diagram__axis {
+  position: absolute;
+  left: 1.5rem;
+  right: 1.5rem;
+  bottom: 1.1rem;
+  height: 34px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.daily-users-diagram__axis-label {
   position: absolute;
   bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-  pointer-events: none;
-}
-
-.chart-x-tick {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
-  transform: translateX(-50%);
-}
-
-.chart-x-tick-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(15, 23, 42, 0.35);
-}
-
-.chart-x-label {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  color: rgba(15, 23, 42, 0.55);
+  color: rgba(15, 23, 42, 0.6);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  transform: translateX(-50%);
+  gap: 0.3rem;
+}
+
+.daily-users-diagram__axis-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.3);
+}
+
+@media (max-width: 640px) {
+  .daily-users-diagram {
+    padding: 1.1rem 1rem 3rem;
+    min-height: 200px;
+  }
+}
+
+.lesson-activity-chart {
+  position: relative;
+  margin-top: 1.25rem;
+  padding: 1.5rem 1.5rem 3rem 3.5rem;
+  border-radius: 26px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 18px 35px rgba(15, 23, 42, 0.08);
+}
+
+.lesson-chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  overflow: hidden;
+}
+
+.lesson-chart-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.lesson-grid-line {
+  stroke: rgba(148, 163, 184, 0.25);
+  stroke-width: 0.35;
+  stroke-dasharray: 4 6;
+}
+
+.lesson-grid-line--vertical {
+  stroke-dasharray: 3 10;
+  opacity: 0.65;
+}
+
+.lesson-area {
+  opacity: 0.85;
+  animation: fadeIn 600ms ease forwards;
+}
+
+.lesson-line {
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 4px 8px rgba(14, 165, 233, 0.25));
+}
+
+.lesson-hover-line {
+  stroke: rgba(14, 165, 233, 0.7);
+  stroke-width: 1;
+  stroke-dasharray: 4 6;
+}
+
+.lesson-hover-dot {
+  fill: #0ea5e9;
+  stroke: #fff;
+  stroke-width: 1.2;
+}
+
+.lesson-tooltip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 12px));
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  background: rgba(14, 165, 233, 0.92);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  box-shadow: 0 16px 30px rgba(14, 165, 233, 0.25);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.lesson-tooltip__value {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.lesson-tooltip__date {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.7rem;
+  opacity: 0.85;
+}
+
+.lesson-axis {
+  position: absolute;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(71, 85, 105, 0.8);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+.lesson-axis--y {
+  left: 1.5rem;
+  top: 1.4rem;
+  bottom: 3.2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  text-align: right;
+  gap: 0.25rem;
+}
+
+.lesson-axis--x {
+  left: 3.3rem;
+  right: 1.5rem;
+  bottom: 1.2rem;
+  height: 20px;
+}
+
+.lesson-axis__label {
+  position: absolute;
+  transform: translateX(-50%);
+  bottom: 0;
+  color: rgba(71, 85, 105, 0.75);
+}
+
+.lesson-legend {
+  position: absolute;
+  bottom: 0.65rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(14, 165, 233, 0.9);
+}
+
+.lesson-legend__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #22d3ee;
+  background: rgba(34, 211, 238, 0.2);
+}
+
+@media (max-width: 640px) {
+  .lesson-activity-chart {
+    padding: 1.25rem 1rem 2.5rem 2.75rem;
+  }
+
+  .lesson-chart-wrapper {
+    height: 220px;
+  }
+
+  .lesson-axis--y {
+    left: 1rem;
+  }
 }
 
 @keyframes drawPath {
