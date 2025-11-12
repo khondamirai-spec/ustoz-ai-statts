@@ -25,37 +25,118 @@ interface CourseCardsCarouselProps {
   courses?: Course[]; // Optional for backward compatibility
 }
 
+// Title to filename mapping for courses with mismatched names
+const titleToFilenameMap: Record<string, string> = {
+  "PR/Reklama": "PR-Reklama",
+  "PR-Reklama": "PR-Reklama", // Handle both formats
+  "Yandex market kursi": "Yandex market kursi kursi", // API returns without second "kursi"
+  "5-sinf Matematika": "5-sinf Matematika", // Now using the correct file
+  "Boshlang'ich dizayn": "Boshlang'ich dizayn", // Now using the correct file
+  "Boshlangʻich dizayn": "Boshlang'ich dizayn", // Handle different quote character (U+02BB) - normalized to regular apostrophe
+  "Boshlangʼich dizayn": "Boshlang'ich dizayn", // Handle different quote character (U+02BC) - normalized to regular apostrophe
+};
+
+// Normalize title for matching (handles different quote types, spaces, etc.)
+const normalizeTitle = (title: string): string => {
+  return title
+    .trim()
+    // Replace different types of apostrophes/quotes with standard apostrophe
+    .replace(/[''ʻʼ]/g, "'")
+    // Normalize multiple spaces to single space
+    .replace(/\s+/g, " ");
+};
+
+// Encode filename for URL - handle % character properly
+const encodeFilename = (filename: string): string => {
+  // Encode % as %25 for proper URL handling
+  // Browsers interpret % as the start of percent-encoding, so it must be encoded
+  return filename.replace(/%/g, "%25");
+};
+
 // Image path helper - converts course title to image path
 const getImagePath = (title: string): string => {
-  if (!title) return "/images/default.png";
+  if (!title) return "/images/Grafik dizayn kursi.png";
   
-  return `/images/${title
-    .replace(/[/%]/g, "-") // Replace / and %
-    .replace(/[']/g, "_")  // Replace apostrophes
-    .replace(/\s+/g, "-")  // Replace spaces
-    .toLowerCase()}.png`;
+  // Normalize the title
+  const normalizedTitle = normalizeTitle(title);
+  
+  // First, check exact match in mapping (after normalization)
+  if (titleToFilenameMap[normalizedTitle]) {
+    const mappedFilename = titleToFilenameMap[normalizedTitle];
+    const encodedFilename = encodeFilename(mappedFilename);
+    return `/images/${encodedFilename}.png`;
+  }
+  
+  // Then check case-insensitive match
+  const caseInsensitiveMatch = Object.keys(titleToFilenameMap).find(
+    key => normalizeTitle(key).toLowerCase() === normalizedTitle.toLowerCase()
+  );
+  if (caseInsensitiveMatch) {
+    const mappedFilename = titleToFilenameMap[caseInsensitiveMatch];
+    const encodedFilename = encodeFilename(mappedFilename);
+    return `/images/${encodedFilename}.png`;
+  }
+  
+  // Default: replace / with - and use title as-is
+  const filename = normalizedTitle.replace(/\//g, "-");
+  const encodedFilename = encodeFilename(filename);
+  return `/images/${encodedFilename}.png`;
 };
 
 // Course teacher mapping
 const courseTeachers: Record<string, string> = {
-  "Biologiya": "Kamoliddin Shamsiyev",
+  "100% lik kodsiz AI agentlar qurish": "Lazizbek Nazarqulov",
+  "Ustoz Pro kursi": "Bekzod Alimuhammedov",
+  "Yandex market kursi": "Farhod Ruzmatov",
+  "8-sinf Geometriya": "Abdulaziz Ne'matullayev",
+  "Grafik dizayn kursi": "Sanjar Isomiddinov",
+  "$0 bilan Uzumdan $1000 topishning": "Farhod Ruzmatov",
+  "Karyera qurish kursi": "Abror Mashrabov",
+  "Telegram Ads kursi": "Nodir Nizomov",
+  "Avtomatizatsiya kursi": "Lazizbek Nazarqulov",
+  "Mobil ilova yasash kursi": "Dilyorjon Ikromov",
+  "8-sinf Algebra": "Abdulaziz Ne'matullayev",
+  "Sun'iy intellektlar kursi": "Faxriddin Ahmedov",
+  "eBay": "Abduvali Abdukayumov",
+  "Biologiya": "Muhammadakbar Musurmonqulov",
+  // Keep existing mappings for other courses
   "PR/Reklama": "Malika Rasulova",
-  "Grafik dizayn kursi": "Bekzod Karimov",
-  "Mobil ilova yasash kursi": "Nodir Nizomov",
-  "Sun'iy intellektlar kursi": "Nodir Nizomov",
-  "S0 bilan Uzumdan $1000 topishning": "Nodir Nizomov",
+  "PR-Reklama": "Malika Rasulova",
   "Targeting": "Diyorbek Xolmatov",
   "Arxitektura": "Nodir Nizomov",
   "Videomontaj": "Nodir Nizomov",
-  "Telegram Ads kursi": "Nodir Nizomov",
   "Mobilografiya": "Jasur Rahimov",
   "default": "Nodir Nizomov"
 };
 
+// Get teacher name for a course title (handles variations)
+const getTeacherName = (title: string): string => {
+  if (!title) return courseTeachers["default"];
+  
+  const normalizedTitle = normalizeTitle(title);
+  
+  // First, check exact match
+  if (courseTeachers[normalizedTitle]) {
+    return courseTeachers[normalizedTitle];
+  }
+  
+  // Then check case-insensitive match
+  const caseInsensitiveMatch = Object.keys(courseTeachers).find(
+    key => normalizeTitle(key).toLowerCase() === normalizedTitle.toLowerCase()
+  );
+  if (caseInsensitiveMatch) {
+    return courseTeachers[caseInsensitiveMatch];
+  }
+  
+  // Fallback to default
+  return courseTeachers["default"];
+};
+
 // Fallback function for courses not in mapping
 const getFallbackImage = (index: number): string => {
-  const imageIndex = (index % 16) + 1;
-  return `/images/mobile-afix-thumbnail_${imageIndex}.png`;
+  // Use a default course image as fallback
+  // Try to use a generic course image, or fallback to the first available image
+  return `/images/Grafik dizayn kursi.png`;
 };
 
 export function CourseCardsCarousel({ courses: staticCourses }: CourseCardsCarouselProps) {
@@ -77,24 +158,37 @@ export function CourseCardsCarousel({ courses: staticCourses }: CourseCardsCarou
     setEndDate(defaultEndDate);
   }, []);
 
+  // Format dates as YYYY-MM-DD
+  const formatDate = useCallback((date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }, []);
+
+  // Track last loaded date range to prevent unnecessary reloads
+  const lastLoadedRangeRef = useRef<{ start: string; end: string } | null>(null);
+
   // Fetch courses from API when dates change
   useEffect(() => {
     if (!startDate || !endDate) return;
 
+    const startDateStr = formatDate(startDate);
+    const endDateStr = formatDate(endDate);
+
+    // Only reload if the date range actually changed
+    if (
+      lastLoadedRangeRef.current?.start === startDateStr &&
+      lastLoadedRangeRef.current?.end === endDateStr
+    ) {
+      return;
+    }
+
+    lastLoadedRangeRef.current = { start: startDateStr, end: endDateStr };
+
     const loadCourses = async () => {
       setLoading(true);
       try {
-        // Format dates as YYYY-MM-DD
-        const formatDate = (date: Date) => {
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, "0");
-          const day = String(date.getDate()).padStart(2, "0");
-          return `${year}-${month}-${day}`;
-        };
-
-        const startDateStr = formatDate(startDate);
-        const endDateStr = formatDate(endDate);
-
         const data = await getCourses(startDateStr, endDateStr);
         
         // Sort by users descending
@@ -109,23 +203,31 @@ export function CourseCardsCarousel({ courses: staticCourses }: CourseCardsCarou
     };
 
     loadCourses();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, formatDate]);
 
   // Merge API courses with teacher + image info
   // (Already sorted by users descending in useEffect)
   const courses = useMemo(() => {
     if (apiCourses.length > 0) {
       // Merge with teacher + image info
-      return apiCourses.map((course, index) => ({
-        id: index + 1,
-        title: course.title,
-        image: getImagePath(course.title) || getFallbackImage(index),
-        instructor: courseTeachers[course.title] || courseTeachers["default"],
-        users: course.users,
-        views: course.views,
-        certificates: course.certificates,
-        portfolio: course.portfolios,
-      }));
+      return apiCourses.map((course, index) => {
+        const imagePath = getImagePath(course.title);
+        // Log for debugging - check the 3 problematic courses
+        const problematicTitles = ["100% lik kodsiz AI agentlar qurish", "5-sinf Matematika", "Boshlang'ich dizayn"];
+        if (problematicTitles.some(t => course.title.includes(t) || course.title.toLowerCase().includes(t.toLowerCase()))) {
+          console.log(`[CourseCardsCarousel] Course: "${course.title}" -> Image: "${imagePath}"`);
+        }
+        return {
+          id: index + 1,
+          title: course.title,
+          image: imagePath || getFallbackImage(index),
+          instructor: getTeacherName(course.title),
+          users: course.users,
+          views: course.views,
+          certificates: course.certificates,
+          portfolio: course.portfolios,
+        };
+      });
     }
     // Fallback to static courses if no API data
     return staticCourses || [];

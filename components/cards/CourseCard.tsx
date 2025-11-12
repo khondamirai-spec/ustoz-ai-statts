@@ -109,6 +109,31 @@ export function CourseCard({
           src={image} 
           alt={title} 
           className="course-card-image"
+          onError={(e) => {
+            // Fallback logic: try alternative encodings, then default image
+            const target = e.target as HTMLImageElement;
+            const currentSrc = target.src;
+            const fallbackImage = '/images/Grafik dizayn kursi.png';
+            
+            // If current src has %25, try without encoding (for files with literal %)
+            if (currentSrc.includes('%25') && !currentSrc.includes('Grafik')) {
+              const unencodedSrc = currentSrc.replace(/%25/g, '%');
+              target.src = unencodedSrc;
+              return;
+            }
+            
+            // If current src has %, try with %25 encoding
+            if (currentSrc.includes('%') && !currentSrc.includes('%25') && !currentSrc.includes('Grafik')) {
+              const encodedSrc = currentSrc.replace(/%/g, '%25');
+              target.src = encodedSrc;
+              return;
+            }
+            
+            // Final fallback to default image
+            if (!currentSrc.includes(fallbackImage)) {
+              target.src = fallbackImage;
+            }
+          }}
         />
         <div className="course-card-overlay">
           <h2 className="course-card-title-overlay">{title}</h2>
@@ -117,14 +142,6 @@ export function CourseCard({
 
       {/* Bottom Section - Course Details */}
       <div className="course-card-content">
-        <div className="course-card-progress">
-          <span className="course-card-progress-icon">▶</span>
-          <span className="course-card-progress-text">
-            {currentMinutes} <span className="course-card-progress-separator">•</span> 
-            <span className="course-card-progress-icon-small">🕐</span> {totalMinutes} daqiqa
-          </span>
-        </div>
-
         <div className="course-card-instructor">
           {instructorAvatar && (
             <img 
