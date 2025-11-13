@@ -21,7 +21,7 @@ export async function GET(_: Request, context: RouteContext) {
     }
 
     const filtered = users.filter(
-      (user) => user.city.toLowerCase() === normalized,
+      (user) => user.city && user.city.toLowerCase() === normalized,
     );
 
     return NextResponse.json({

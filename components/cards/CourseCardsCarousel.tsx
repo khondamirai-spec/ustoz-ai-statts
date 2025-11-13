@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { CourseCard } from "./CourseCard";
-import { DatePicker } from "../shared/DatePicker";
+import { DatePicker, type DatePickerHandle } from "../shared/DatePicker";
 import { getCourses } from "@/lib/api";
 
 interface Course {
@@ -150,6 +150,9 @@ export function CourseCardsCarousel({ courses: staticCourses }: CourseCardsCarou
   const [loading, setLoading] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardWidthRef = useRef(220 + 24); // card width + gap
+  const startDatePickerRef = useRef<DatePickerHandle>(null);
+  const endDatePickerRef = useRef<DatePickerHandle>(null);
+  const calendarIconButtonRef = useRef<HTMLButtonElement>(null);
 
   // Set dates on client side only to avoid hydration mismatch
   useEffect(() => {
@@ -341,9 +344,73 @@ export function CourseCardsCarousel({ courses: staticCourses }: CourseCardsCarou
       <div className="course-cards-header">
         <h2 className="course-cards-title">Kurslar</h2>
         <div className="flex items-center gap-2">
-          <div className="date-filter-modern-compact">
+          {/* Calendar Icon Button */}
+          <button
+            ref={calendarIconButtonRef}
+            onClick={() => {
+              startDatePickerRef.current?.open();
+            }}
+            className="flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200/80 bg-white hover:bg-slate-50 transition-colors duration-200 hover:border-sky-200/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/60 focus-visible:ring-offset-1"
+            aria-label="Open calendar"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-slate-600"
+            >
+              <rect
+                x="3"
+                y="4"
+                width="18"
+                height="18"
+                rx="2"
+                ry="2"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <line
+                x1="16"
+                y1="2"
+                x2="16"
+                y2="6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <line
+                x1="8"
+                y1="2"
+                x2="8"
+                y2="6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <line
+                x1="3"
+                y1="10"
+                x2="21"
+                y2="10"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          
+          <div className="date-filter-modern-compact" style={{ display: 'none' }}>
             <div className="date-filter-wrapper">
               <DatePicker
+                ref={startDatePickerRef}
+                triggerRef={calendarIconButtonRef}
                 value={startDate}
                 onChange={setStartDate}
                 label="From"
@@ -357,6 +424,7 @@ export function CourseCardsCarousel({ courses: staticCourses }: CourseCardsCarou
                 </svg>
               </div>
               <DatePicker
+                ref={endDatePickerRef}
                 value={endDate}
                 onChange={setEndDate}
                 label="To"

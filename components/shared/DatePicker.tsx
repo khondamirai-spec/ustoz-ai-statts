@@ -1,13 +1,23 @@
+"use client";
+
 import {
   useCallback,
   useEffect,
+  useImperativeHandle,
   useMemo,
   useRef,
   useState,
+  forwardRef,
   type MouseEvent as ReactMouseEvent,
+  type RefObject,
 } from "react";
 
 type DatePickerAlign = "left" | "right";
+
+export interface DatePickerHandle {
+  open: () => void;
+  close: () => void;
+}
 
 interface DatePickerProps {
   value?: Date;
@@ -18,16 +28,12 @@ interface DatePickerProps {
   align?: DatePickerAlign;
   weekStartsOn?: 0 | 1;
   disabledDates?: (date: Date) => boolean;
+  buttonRef?: RefObject<HTMLButtonElement>;
+  triggerRef?: RefObject<HTMLElement>;
 }
 
 const baseButtonClasses =
   "group relative flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-gradient-to-r from-white/95 via-white to-slate-50/80 px-4 py-3 text-left text-sm font-semibold text-slate-700 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-lg transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-200/70 hover:shadow-[0_20px_45px_rgba(15,23,42,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/60 focus-visible:ring-offset-1";
-
-const calendarContainerClasses =
-  "calendar-popover-ambient absolute z-[100] w-[min(20rem,_calc(100vw-2rem))] overflow-hidden rounded-3xl border border-white/60 bg-white/90 px-0 backdrop-blur-2xl shadow-[0_30px_70px_-35px_rgba(15,23,42,0.85)] ring-1 ring-slate-900/5 transition-all duration-200 ease-out isolate";
-
-const dayButtonBaseClasses =
-  "flex h-11 w-11 items-center justify-center rounded-2xl text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white";
 
 const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -78,7 +84,7 @@ const toStartOfDay = (date: Date) => {
   return normalized;
 };
 
-export function DatePicker({
+export const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(function DatePicker({
   value,
   onChange,
   label = "Date",
@@ -87,10 +93,16 @@ export function DatePicker({
   align = "left",
   weekStartsOn = 1,
   disabledDates,
-}: DatePickerProps) {
+  buttonRef: externalButtonRef,
+  triggerRef,
+}, ref) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState<Date>(() => toStartOfDay(value ?? new Date()));
+  const [popupPosition, setPopupPosition] = useState<{ top: number; left?: number; right?: number } | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const internalButtonRef = useRef<HTMLButtonElement | null>(null);
+  const buttonRef = (externalButtonRef ?? internalButtonRef) as RefObject<HTMLButtonElement>;
+  const positionRef = (triggerRef ?? buttonRef) as RefObject<HTMLElement>;
   const today = useMemo(() => toStartOfDay(new Date()), []);
   const quickSelectOptions = useMemo(
     () => [
@@ -115,6 +127,30 @@ export function DatePicker({
   }, [value]);
 
   useEffect(() => {
+    if (!isOpen) {
+      setPopupPosition(null);
+      return;
+    }
+
+    // Calculate popup position when opening
+    if (positionRef.current) {
+      const rect = positionRef.current.getBoundingClientRect();
+      const popupWidth = 272; // min(17rem) = 272px
+      const spacing = 8; // mt-2 = 8px
+      
+      if (align === "left") {
+        setPopupPosition({
+          top: rect.bottom + spacing,
+          left: rect.left,
+        });
+      } else {
+        setPopupPosition({
+          top: rect.bottom + spacing,
+          right: window.innerWidth - rect.right,
+        });
+      }
+    }
+
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -127,16 +163,39 @@ export function DatePicker({
       }
     };
 
+    const handleResize = () => {
+      if (positionRef.current) {
+        const rect = positionRef.current.getBoundingClientRect();
+        const spacing = 8;
+        
+        if (align === "left") {
+          setPopupPosition({
+            top: rect.bottom + spacing,
+            left: rect.left,
+          });
+        } else {
+          setPopupPosition({
+            top: rect.bottom + spacing,
+            right: window.innerWidth - rect.right,
+          });
+        }
+      }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("touchstart", handleClickOutside);
     document.addEventListener("keydown", handleEscape);
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("scroll", handleResize, true);
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleResize, true);
     };
-  }, []);
+  }, [isOpen, align, positionRef]);
 
   const toggleOpen = useCallback(
     (event?: ReactMouseEvent<HTMLButtonElement>) => {
@@ -147,6 +206,19 @@ export function DatePicker({
     },
     []
   );
+
+  const open = useCallback(() => {
+    setIsOpen(true);
+  }, []);
+
+  const close = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  useImperativeHandle(ref, () => ({
+    open,
+    close,
+  }), [open, close]);
 
   const handleMonthChange = useCallback((offset: number) => {
     setViewDate((prev) => {
@@ -216,13 +288,10 @@ export function DatePicker({
 
   const popoverAlignmentClass =
     align === "left"
-      ? "bottom-full left-0 mb-2 origin-bottom-left"
-      : "bottom-full right-0 mb-2 origin-bottom-right";
+      ? "top-full left-0 mt-2 origin-top-left"
+      : "top-full right-0 mt-2 origin-top-right";
 
   const buttonClasses = [baseButtonClasses, buttonClassName].filter(Boolean).join(" ");
-
-  const monthButtonClasses =
-    "flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200/80 bg-white/80 text-slate-500 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/60 focus-visible:ring-offset-2";
 
   const iconClasses = [
     "h-4 w-4 text-slate-400 transition-transform duration-300",
@@ -234,6 +303,7 @@ export function DatePicker({
   return (
     <div ref={containerRef} className="relative select-none">
       <button
+        ref={buttonRef}
         type="button"
         className={buttonClasses}
         onClick={toggleOpen}
@@ -276,54 +346,31 @@ export function DatePicker({
         </div>
       </button>
 
-      {isOpen ? (
+      {isOpen && popupPosition ? (
         <div
-          className={`${calendarContainerClasses} ${popoverAlignmentClass}`}
+          className="calendar-popover-ambient fixed z-[9999] w-[min(17rem,_calc(100vw-2rem))] rounded-2xl"
           style={{
+            top: `${popupPosition.top}px`,
+            ...(popupPosition.left !== undefined ? { left: `${popupPosition.left}px` } : {}),
+            ...(popupPosition.right !== undefined ? { right: `${popupPosition.right}px` } : {}),
             animation: "calendarPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards",
-            maxWidth: "min(20rem, calc(100vw - 2rem))",
           }}
           role="dialog"
           aria-modal="true"
         >
-          <div className="space-y-3 border-b border-white/60 bg-gradient-to-br from-slate-50/85 via-white to-white px-5 pb-4 pt-5">
-            <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.35em] text-slate-400">
-              <span>{label}</span>
-              <span className="text-slate-300">{headerStatusNote}</span>
-            </div>
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Selected date</p>
-                <p className="mt-1 text-lg font-semibold text-slate-900">{selectedDateLabel}</p>
-              </div>
-              <button
-                type="button"
-                className="rounded-full border border-slate-200/80 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500 transition-all duration-200 hover:border-slate-300 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/50 focus-visible:ring-offset-2"
-                onClick={handleJumpToToday}
-              >
-                Jump to today
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2">
+          {/* Header Section */}
+          <div className="calendar-header-section">
+            <div className="calendar-header-label">{label}</div>
+            <div className="calendar-selected-date-display">{selectedDateLabel}</div>
+            <div className="calendar-quick-select-container">
               {quickSelectOptions.map((option) => {
                 const isDisabled = disabledDates?.(option.date) ?? false;
                 const isActive = isSameDay(option.date, value);
-                let optionClasses =
-                  "rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] transition-all duration-200";
-                if (isActive) {
-                  optionClasses += " border-sky-500 bg-gradient-to-r from-sky-50 to-blue-50 text-sky-700 shadow-lg shadow-sky-200/60";
-                } else {
-                  optionClasses += " border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-900";
-                }
-                if (isDisabled) {
-                  optionClasses += " cursor-not-allowed opacity-40 hover:border-slate-200 hover:text-slate-500";
-                }
-
                 return (
                   <button
                     key={option.label}
                     type="button"
-                    className={optionClasses}
+                    className={`calendar-quick-select-btn ${isActive ? "active" : ""}`}
                     onClick={() => handleQuickSelect(option.date)}
                     disabled={isDisabled}
                     aria-pressed={isActive}
@@ -334,15 +381,16 @@ export function DatePicker({
               })}
             </div>
           </div>
-          <div className="flex items-center justify-between px-5 py-3">
+
+          {/* Navigation Section */}
+          <div className="calendar-navigation">
             <button
               type="button"
               aria-label="Previous month"
-              className={monthButtonClasses}
+              className="calendar-nav-button"
               onClick={() => handleMonthChange(-1)}
             >
               <svg
-                className="h-4 w-4"
                 viewBox="0 0 20 20"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -350,24 +398,23 @@ export function DatePicker({
                 <path
                   d="M12.5 5L7.5 10L12.5 15"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
             </button>
-            <div className="text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400">Viewing</p>
-              <p className="text-base font-semibold text-slate-900">{monthLabel}</p>
+            <div className="calendar-month-year-display">
+              <div className="calendar-month-year-label">Viewing</div>
+              <div className="calendar-month-year-value">{monthLabel}</div>
             </div>
             <button
               type="button"
               aria-label="Next month"
-              className={monthButtonClasses}
+              className="calendar-nav-button"
               onClick={() => handleMonthChange(1)}
             >
               <svg
-                className="h-4 w-4"
                 viewBox="0 0 20 20"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -375,45 +422,45 @@ export function DatePicker({
                 <path
                   d="M7.5 5L12.5 10L7.5 15"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
             </button>
           </div>
-          <div className="px-5 pb-5 pt-1">
-            <div className="mb-3 grid grid-cols-7 gap-1.5 text-center text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400/90">
-              {weekdayLabels.map((dayLabel) => (
-                <span key={dayLabel} className="py-1">
-                  {dayLabel}
-                </span>
-              ))}
-            </div>
-            <div className="flex flex-col gap-1.5">
+
+          {/* Days Header */}
+          <div className="calendar-days-header">
+            {weekdayLabels.map((dayLabel) => (
+              <div key={dayLabel} className="calendar-day-header">
+                {dayLabel}
+              </div>
+            ))}
+          </div>
+
+          {/* Calendar Grid */}
+          <div className="calendar-grid-container">
+            <div className="calendar-grid">
               {calendarGrid.map((week, weekIndex) => (
-                <div key={weekIndex} className="grid grid-cols-7 gap-1.5">
+                <div key={weekIndex} className="calendar-week-row">
                   {week.map((day) => {
                     const isCurrentMonth = day.getMonth() === viewDate.getMonth();
                     const selected = isSameDay(day, value);
                     const isToday = isSameDay(day, today);
                     const isDisabled = disabledDates?.(day) ?? false;
 
-                    let dayClasses = `${dayButtonBaseClasses} bg-white/70 text-slate-600 shadow-[0_4px_10px_rgba(15,23,42,0.08)]`;
+                    let dayClasses = "calendar-day";
                     if (selected) {
-                      dayClasses +=
-                        " bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-xl shadow-sky-500/30 hover:shadow-2xl hover:shadow-sky-500/40";
+                      dayClasses += " calendar-day-selected";
                     } else if (isToday) {
-                      dayClasses += " border border-sky-200 bg-sky-50 text-sky-700";
-                    } else if (!isCurrentMonth) {
-                      dayClasses += " text-slate-300 opacity-60";
-                    } else {
-                      dayClasses +=
-                        " hover:-translate-y-0.5 hover:bg-white hover:text-slate-900 hover:shadow-[0_12px_25px_rgba(15,23,42,0.12)]";
+                      dayClasses += " calendar-day-today";
                     }
-
+                    if (!isCurrentMonth) {
+                      dayClasses += " calendar-day-other-month";
+                    }
                     if (isDisabled) {
-                      dayClasses += " cursor-not-allowed opacity-30 hover:translate-y-0 hover:shadow-none";
+                      dayClasses += " calendar-day-disabled";
                     }
 
                     return (
@@ -439,10 +486,21 @@ export function DatePicker({
               ))}
             </div>
           </div>
+
+          {/* Footer */}
+          <div className="calendar-footer">
+            <button
+              type="button"
+              className="calendar-footer-button"
+              onClick={handleJumpToToday}
+            >
+              Jump to Today
+            </button>
+          </div>
         </div>
       ) : null}
     </div>
   );
-}
+});
 
 

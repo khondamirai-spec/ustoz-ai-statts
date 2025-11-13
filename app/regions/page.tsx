@@ -4,15 +4,15 @@ import { useState, useEffect } from "react";
 import { getRegions, getDistricts, getMFY, getSchools } from "@/lib/api";
 
 export default function RegionHierarchy() {
-  const [regions, setRegions] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [mfy, setMfy] = useState([]);
-  const [schools, setSchools] = useState([]);
+  const [regions, setRegions] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [mfy, setMfy] = useState<any[]>([]);
+  const [schools, setSchools] = useState<any[]>([]);
 
-  const [activeRegion, setActiveRegion] = useState(null);
-  const [activeDistrict, setActiveDistrict] = useState(null);
+  const [activeRegion, setActiveRegion] = useState<string | null>(null);
+  const [activeDistrict, setActiveDistrict] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Load regions
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function RegionHierarchy() {
   }, []);
 
   // Load districts when region selected
-  const handleRegionClick = async (region) => {
+  const handleRegionClick = async (region: string) => {
     setActiveRegion(region);
     setActiveDistrict(null);
     setMfy([]);
@@ -54,7 +54,7 @@ export default function RegionHierarchy() {
   };
 
   // Load MFY + schools when district selected
-  const handleDistrictClick = async (district) => {
+  const handleDistrictClick = async (district: string) => {
     setActiveDistrict(district);
     setLoading(true);
     setError(null);
