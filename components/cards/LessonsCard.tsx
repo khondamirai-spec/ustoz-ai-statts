@@ -66,7 +66,7 @@ export function LessonsCard({
       y: 0,
       transition: {
         duration: 0.48,
-        ease: [0.22, 1, 0.36, 1],
+        ease: [0.22, 1, 0.36, 1] as const,
         delay: delay * 0.08,
       },
     },

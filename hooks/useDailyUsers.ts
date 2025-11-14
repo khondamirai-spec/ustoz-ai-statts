@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 
-export function useDailyUsers(startDate, endDate) {
-  const [data, setData] = useState([]);
+interface DailyUserData {
+  date: string;
+  count: number;
+}
+
+export function useDailyUsers(startDate: string, endDate: string) {
+  const [data, setData] = useState<DailyUserData[]>([]);
   const [total, setTotal] = useState(0);
   const [dailyAvg, setDailyAvg] = useState(0);
   const [peakDay, setPeakDay] = useState(0);
@@ -20,7 +25,7 @@ export function useDailyUsers(startDate, endDate) {
 
       if (!res.ok || !json.data) throw new Error("API error");
 
-      const arr = json.data; // [{date, count}, ...]
+      const arr = json.data as DailyUserData[]; // [{date, count}, ...]
 
       setData(arr);
 
@@ -50,7 +55,7 @@ export function useDailyUsers(startDate, endDate) {
       console.log("Daily users API error:", err);
 
       // ✅ Dummy fallback (similar to your UI)
-      const fallback = [
+      const fallback: DailyUserData[] = [
         { date: "2025-10-01", count: 120 },
         { date: "2025-10-02", count: 90 },
         { date: "2025-10-03", count: 150 }
@@ -82,4 +87,5 @@ export function useDailyUsers(startDate, endDate) {
     loading
   };
 }
+
 

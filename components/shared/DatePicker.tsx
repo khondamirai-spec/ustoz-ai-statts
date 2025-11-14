@@ -29,7 +29,7 @@ interface DatePickerProps {
   weekStartsOn?: 0 | 1;
   disabledDates?: (date: Date) => boolean;
   buttonRef?: RefObject<HTMLButtonElement>;
-  triggerRef?: RefObject<HTMLElement>;
+  triggerRef?: RefObject<HTMLElement | null>;
 }
 
 const baseButtonClasses =

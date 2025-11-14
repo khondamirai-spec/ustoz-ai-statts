@@ -11,6 +11,7 @@ import {
 } from "react";
 import type { MouseEvent } from "react";
 import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
+import { DateRangePicker } from "@/components/shared/DateRangePicker";
 import { useDailyUsers } from "@/hooks/useDailyUsers";
 
 interface ChartPoint {
@@ -191,7 +192,7 @@ export function WeeklyMonthlyYearlyCard({
       y: 0,
       transition: {
         duration: 0.48,
-        ease: [0.22, 1, 0.36, 1],
+        ease: [0.22, 1, 0.36, 1] as const,
         delay: delay * 0.08,
       },
     },
@@ -381,34 +382,23 @@ export function WeeklyMonthlyYearlyCard({
           <p className="new-users-subtitle">New Users Registration Overview</p>
         </div>
         
-        {/* Clean Date Filter */}
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <input
-              type="date"
-              value={startDateStr}
-              onChange={(e) => {
-                const date = e.target.value ? new Date(e.target.value) : undefined;
-                setStartDate(date);
-                setStartDateStr(e.target.value);
-              }}
-              className="px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-400 transition-all cursor-pointer"
-            />
-          </div>
-          <span className="text-slate-400 font-semibold text-lg">—</span>
-          <div className="relative">
-            <input
-              type="date"
-              value={endDateStr}
-              onChange={(e) => {
-                const date = e.target.value ? new Date(e.target.value) : undefined;
-                setEndDate(date);
-                setEndDateStr(e.target.value);
-              }}
-              className="px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-400 transition-all cursor-pointer"
-            />
-          </div>
-        </div>
+        {/* Date Range Picker */}
+        <DateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={(date) => {
+            setStartDate(date);
+            if (date) {
+              setStartDateStr(date.toISOString().split("T")[0]);
+            }
+          }}
+          onEndDateChange={(date) => {
+            setEndDate(date);
+            if (date) {
+              setEndDateStr(date.toISOString().split("T")[0]);
+            }
+          }}
+        />
       </div>
 
       {dailyUsersData.loading ? (

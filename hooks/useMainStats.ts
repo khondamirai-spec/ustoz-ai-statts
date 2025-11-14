@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
 import { apiGet } from "../lib/api";
 
+interface MainStatsData {
+  users: number;
+  lessons: number;
+  certificates: number;
+  courseViews: number;
+}
+
 export function useMainStats() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<MainStatsData | null>(null);
   const [loading, setLoading] = useState(true);
 
   async function load() {
@@ -36,7 +43,5 @@ export function useMainStats() {
 
   return { data, loading };
 }
-
-
 
 
